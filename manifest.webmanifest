@@ -1,0 +1,17 @@
+{
+  "name": "라이미의 AI 언어 연구소",
+  "short_name": "AI 언어 연구소",
+  "description": "라이미와 함께 AI가 우리 말을 어떻게 알아듣는지 배우는 어린이 AI 학습 놀이.",
+  "lang": "ko",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff7ec",
+  "theme_color": "#ff8a5c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
