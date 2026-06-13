@@ -277,19 +277,27 @@ function orderRound(target, guide){
 }
 function gamePosition(stage,c){
   const R = LANG==='ko' ? [
-    {tg:["나는","학교에","가요"], g:"👇 순서대로 클릭해 말이 되게 해 볼까요?"},
-    {tg:["토끼가","당근을","먹어요"], g:"👇 뒤죽박죽 단어를 바른 순서로 클릭해 주세요"},
-    {tg:["우리는","공원에서","놀아요"], g:"👇 순서대로 눌러 문장을 완성해 볼까요?"}
+    {tg:["로봇팔이","그림을","그려요"], g:"👇 순서대로 클릭해 말이 되게 해 볼까요?"},
+    {tg:["앨리스가","축구공을","차요"], g:"👇 뒤죽박죽 단어를 바른 순서로 클릭해 주세요"},
+    {tg:["리쿠가","재미있는 책을","읽어요"], g:"👇 주어 → 목적어 → 서술어 순서로 클릭해 볼까요?"},
+    {tg:["로봇개가","노란 공을","물어요"], g:"👇 순서대로 클릭해 문장을 완성해 볼까요?"},
+    {tg:["스팟이","빨간 사과를","먹어요"], g:"👇 바른 순서로 클릭해 말이 되게 해 주세요"}
   ] : [
-    {tg:["I","walk","to school"], g:"👇 Put them in order so it makes sense"},
-    {tg:["The cat","chases","the dog"], g:"👇 Make 'The cat chases the dog' — order decides who chases!"},
-    {tg:["We","play","in the park"], g:"👇 Tap them in order to finish the sentence"}
+    {tg:["The robot arm","draws","a picture"], g:"👇 Put them in order so it makes sense"},
+    {tg:["Alice","kicks","the soccer ball"], g:"👇 Tap the jumbled words in the right order"},
+    {tg:["Riku","reads","a fun book"], g:"👇 Subject → verb → object — tap them in order!"},
+    {tg:["The robot dog","bites","the yellow ball"], g:"👇 Tap them in order to finish the sentence"},
+    {tg:["Spot","eats","a red apple"], g:"👇 Put them in the right order so it makes sense"}
   ];
   const notes=[
     t("🔀 순서를 맞추니 말이 되네요! 뒤죽박죽이면 무슨 뜻인지 알 수 없어요.",
       "🔀 In the right order it makes sense! All jumbled up, you can't tell what it means."),
     t("🔀 단어가 다 있어도 순서가 엉키면 이상하지요? 순서가 뜻을 만들어요.",
-      "🔀 Even with all the words, the wrong order is confusing. Order makes the meaning.")
+      "🔀 Even with all the words, the wrong order is confusing. Order makes the meaning."),
+    t("🔀 주어 → 목적어 → 서술어 순서로 놓으니 딱 맞지요?",
+      "🔀 Subject → verb → object — that's the order that fits!"),
+    t("🔀 순서만 바꿔도 누가 무엇을 했는지가 달라져요!",
+      "🔀 Just changing the order changes who did what!")
   ];
   const rounds=R.map((r,i)=>({fn:orderRound(r.tg,r.g), note:notes[i]}));
   runRounds(stage, rounds, c,
