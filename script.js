@@ -397,20 +397,6 @@ function predictRound(prefix, options){
     box.append(q,row,bars);
   };
 }
-function chainRound(tip, start, steps){
-  return (box,onDone)=>{
-    box.appendChild(el('div',{style:'font-size:22px'},tip));
-    const line=el('div',{class:'sentence'},start); const row=el('div',{class:'row'}); let s=0;
-    function render(){row.innerHTML='';
-      steps[s].forEach(w=>{const chip=el('div',{class:'chip'},w);
-        chip.onclick=()=>{line.textContent+=w+' ';line.classList.add('pulse');speak(w);
-          setTimeout(()=>line.classList.remove('pulse'),300);
-          s++; if(s<steps.length) render(); else {row.innerHTML='';setTimeout(onDone,1000);}};
-        row.appendChild(chip);});
-    }
-    render(); box.append(line,row);
-  };
-}
 function gamePredict(stage,c){
   let rounds;
   if(LANG==='ko'){
