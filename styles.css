@@ -18,9 +18,11 @@
   @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
 
   .topbar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand-logo{height:48px;width:auto;display:block;}
-  .brand-name{font-family:'Jua';font-size:28px;color:var(--ink);letter-spacing:.5px;}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+  .brand-logo{height:52px;width:auto;max-height:52px;object-fit:contain;display:block;flex:none;}
+  .brand-text{display:flex;flex-direction:column;line-height:1.12;}
+  .brand-name{font-family:'Jua';font-size:26px;color:#39455c;letter-spacing:.3px;}
+  .brand-tag{font-size:14px;color:#8b97a8;}
   .actions{margin-left:auto;display:flex;align-items:center;gap:12px;}
   .back{font-family:'Jua';font-size:22px;background:#fff;border:3px solid var(--ink);
     border-radius:18px;padding:8px 16px;box-shadow:var(--shadow);cursor:pointer;}

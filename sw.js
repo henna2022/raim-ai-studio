@@ -1,5 +1,5 @@
 /* 라이미의 AI 언어 연구소 — 서비스 워커 (오프라인 캐시) */
-const CACHE = 'raim-ai-v2';
+const CACHE = 'raim-ai-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -27,19 +27,12 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
-  // 네비게이션 요청은 네트워크 우선, 실패 시 캐시된 index.html
-  if (req.mode === 'navigate') {
-    e.respondWith(
-      fetch(req).catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
-  // 그 외 정적 자원은 캐시 우선
+  // 네트워크 우선: 온라인이면 항상 최신, 실패 시 캐시(오프라인) 대체
   e.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
+    fetch(req).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
       return res;
-    }))
+    }).catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
   );
 });
