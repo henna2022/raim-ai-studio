@@ -1,11 +1,12 @@
 /* 라이미의 AI 언어 연구소 — 서비스 워커 (오프라인 캐시) */
-const CACHE = 'raim-ai-v1';
+const CACHE = 'raim-ai-v2';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './script.js',
   './manifest.webmanifest',
+  './assets/seoulraim_logo.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
