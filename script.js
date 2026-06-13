@@ -25,8 +25,8 @@ const LESSONS = [
          en:"Similar words live in nearby towns. Can you drag each word to the right town?"}},
   {c:3,emoji:"🔀",
    name:{ko:"순서의 중요성",en:"Order Matters"}, tag:{ko:"위치",en:"Position"},
-   hook:{ko:"순서를 모르면 AI는 단어를 뒤죽박죽으로 봐요! 순서대로 클릭해 말이 되게 해 볼까요?",
-         en:"Without order, AI sees words all jumbled up! Put them in order so the sentence makes sense."}},
+   hook:{ko:"순서를 모르면 AI는 단어를 뒤죽박죽으로 봐요! 순서대로 클릭해 문장을 완성시켜볼까요?",
+         en:"Without order, AI sees words all jumbled up! Tap them in order to complete the sentence!"}},
   {c:4,emoji:"🔦",
    name:{ko:"스포트라이트 탐정",en:"Spotlight Detective"}, tag:{ko:"어텐션",en:"Attention"},
    hook:{ko:"이게 제일 중요한 비밀이에요! 헷갈릴 땐 어떤 단어를 봐야 할까요? 정답 단어를 눌러 주세요.",
@@ -276,18 +276,20 @@ function orderRound(target, guide){
   };
 }
 function gamePosition(stage,c){
+  const gKo="👇 뒤죽박죽 단어를 바른 순서대로 터치해주세요.";
+  const gEn="👇 Tap the jumbled words in the right order.";
   const R = LANG==='ko' ? [
-    {tg:["로봇팔이","그림을","그려요"], g:"👇 순서대로 클릭해 말이 되게 해 볼까요?"},
-    {tg:["앨리스가","축구공을","차요"], g:"👇 뒤죽박죽 단어를 바른 순서로 클릭해 주세요"},
-    {tg:["리쿠가","재미있는 책을","읽어요"], g:"👇 주어 → 목적어 → 서술어 순서로 클릭해 볼까요?"},
-    {tg:["로봇개가","노란 공을","물어요"], g:"👇 순서대로 클릭해 문장을 완성해 볼까요?"},
-    {tg:["스팟이","빨간 사과를","먹어요"], g:"👇 바른 순서로 클릭해 말이 되게 해 주세요"}
+    {tg:["로봇팔이","그림을","그려요"], g:gKo},
+    {tg:["앨리스가","축구공을","차요"], g:gKo},
+    {tg:["리쿠가","재미있는 책을","읽어요"], g:gKo},
+    {tg:["로봇개가","노란 공을","물어요"], g:gKo},
+    {tg:["스팟이","빨간 사과를","먹어요"], g:gKo}
   ] : [
-    {tg:["The robot arm","draws","a picture"], g:"👇 Put them in order so it makes sense"},
-    {tg:["Alice","kicks","the soccer ball"], g:"👇 Tap the jumbled words in the right order"},
-    {tg:["Riku","reads","a fun book"], g:"👇 Subject → verb → object — tap them in order!"},
-    {tg:["The robot dog","bites","the yellow ball"], g:"👇 Tap them in order to finish the sentence"},
-    {tg:["Spot","eats","a red apple"], g:"👇 Put them in the right order so it makes sense"}
+    {tg:["The robot arm","draws","a picture"], g:gEn},
+    {tg:["Alice","kicks","the soccer ball"], g:gEn},
+    {tg:["Riku","reads","a fun book"], g:gEn},
+    {tg:["The robot dog","bites","the yellow ball"], g:gEn},
+    {tg:["Spot","eats","a red apple"], g:gEn}
   ];
   const notes=[
     t("🔀 순서를 맞추니 말이 되네요! 뒤죽박죽이면 무슨 뜻인지 알 수 없어요.",
