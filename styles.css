@@ -129,4 +129,4 @@
   .hidden{display:none!important;}
 
   .credit{position:absolute;left:0;right:0;bottom:8px;text-align:center;
-    font-size:14px;color:var(--ink);opacity:.32;letter-spacing:.5px;pointer-events:none;z-index:5;}
+    font-size:14px;color:var(--ink);opacity:.12;letter-spacing:.5px;pointer-events:none;z-index:5;}
