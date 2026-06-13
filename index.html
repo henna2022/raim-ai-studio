@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Raimi's AI Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 시작 -->
+  <section id="start" class="screen active">
+    <div class="topbar"><button class="back lang" id="langBtn2"></button></div>
+    <div class="cert">
+      <img class="atto big" id="attoStart" alt="Raimi">
+      <h1 id="startTitle"></h1>
+      <div class="bubble" id="startSub" style="max-width:680px"></div>
+      <button class="btn go big" id="startBtn"></button>
+    </div>
+  </section>
+
+  <!-- 메뉴 -->
+  <section id="home" class="screen">
+    <div class="topbar">
+      <button class="back reset" id="resetHome"></button>
+      <button class="back lang" id="langBtn"></button>
+    </div>
+    <div class="home-hero">
+      <h1 id="homeTitle"></h1>
+      <div class="home-sub" id="homeSub"></div>
+      <div class="stampbar"><span class="stampcount" id="stampCount"></span><div class="stamps" id="stamps"></div></div>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- 게임 -->
+  <section id="game" class="screen">
+    <div class="topbar">
+      <button class="back reset" id="resetGame"></button>
+      <button class="back" id="backBtn" onclick="goHome()"></button>
+    </div>
+    <div class="saybar">
+      <img class="atto" id="attoG" alt="Raimi">
+      <div class="bubble" id="hook"></div>
+      <button class="speak" id="speakBtn">🔊</button>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="reveal" id="reveal"></div>
+  </section>
+
+  <!-- 완료 -->
+  <section id="complete" class="screen">
+    <div class="topbar"><button class="back reset" id="resetDone"></button></div>
+    <div class="cert">
+      <img class="atto big" id="raimiBig" alt="Raimi">
+      <h1 id="doneTitle"></h1>
+      <div class="bubble" id="doneSub" style="max-width:700px"></div>
+      <div class="stamps" id="doneStamps"></div>
+      <button class="btn go big" id="doneBtn"></button>
+    </div>
+  </section>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
