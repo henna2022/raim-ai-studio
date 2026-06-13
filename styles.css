@@ -58,12 +58,12 @@
   .card .done-badge{position:absolute;top:8px;right:10px;font-size:26px;color:var(--c2);}
   .card.done{background:#f1fff3;}
   .card .emoji{font-size:50px;} .card .name{font-size:24px;}
-  .card .tag{font-size:19px;font-weight:600;color:#fff;padding:4px 16px;border-radius:14px;
+  .card .tag{font-size:19px;font-weight:600;color:var(--ink);padding:4px 16px;border-radius:14px;
     border:3px solid var(--ink);box-shadow:0 3px 0 rgba(58,47,42,.18);}
   .card[data-c="1"]{border-color:var(--c1)} .card[data-c="1"] .num{color:var(--c1)} .card[data-c="1"] .tag{background:var(--c1)}
   .card[data-c="2"]{border-color:var(--c2)} .card[data-c="2"] .num{color:var(--c2)} .card[data-c="2"] .tag{background:var(--c2)}
   .card[data-c="3"]{border-color:var(--c3)} .card[data-c="3"] .num{color:var(--c3)} .card[data-c="3"] .tag{background:var(--c3)}
-  .card[data-c="4"]{border-color:var(--c4)} .card[data-c="4"] .num{color:#d99a00} .card[data-c="4"] .tag{background:var(--c4);color:var(--ink)}
+  .card[data-c="4"]{border-color:var(--c4)} .card[data-c="4"] .num{color:#d99a00} .card[data-c="4"] .tag{background:var(--c4)}
   .card[data-c="5"]{border-color:var(--c5)} .card[data-c="5"] .num{color:var(--c5)} .card[data-c="5"] .tag{background:var(--c5)}
 
   .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
