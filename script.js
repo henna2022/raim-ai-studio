@@ -57,12 +57,12 @@ function showComplete(){renderStamps('doneStamps');show('complete');fire();}
 
 /* ---------- 언어 적용 ---------- */
 function applyLang(){
-  document.title=t('라이미의 AI 실험실',"Raimi's AI Lab");
-  setText('startTitle', t('라이미의 AI 실험실',"Raimi's AI Lab"));
+  document.title=t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab");
+  setText('startTitle', t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab"));
   setHTML('startSub', t('🤖 안녕하세요, 저는 라이미예요!<br>5개의 도장을 모으면서<br>AI가 우리 말을 어떻게 알아듣는지<br>함께 알아볼까요?',
     "🤖 Hi, I'm Raimi!<br>Collect all 5 stamps<br>and discover how AI<br>understands our words!"));
   setText('startBtn', t('▶ 시작하기','▶ Start'));
-  setHTML('homeTitle', t('라이미의 <b>AI 실험실</b>',"Raimi's <b>AI Lab</b>"));
+  setHTML('homeTitle', t('라이미의 <b>AI 언어 연구소</b>',"Raimi's <b>AI Language Lab</b>"));
   setText('homeSub', t('🤖 5가지 비밀을 배우고 도장을 모아 봐요!','🤖 Learn 5 secrets and collect all the stamps!'));
   setText('doneTitle', t('축하해요! 🎉','Congratulations! 🎉'));
   setHTML('doneSub', t('5개의 도장을 모두 모았어요!<br>이제 여러분도 AI 박사예요.<br>정말 잘했어요! 🏅',
