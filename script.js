@@ -168,6 +168,11 @@ function tokenRound(words){
         t('조각: '+(cuts.size+1)+'개 — 단어가 되면 초록색!','Pieces: '+(cuts.size+1)+' — real words turn green!'):'';}
     }
     render();
+    const resetBtn=el('button',{class:'btn home',style:'font-size:19px;padding:9px 20px;margin-top:10px;'},
+      t('✂️ 다시 잘라보기','✂️ Cut again'));
+    resetBtn.onclick=()=>{if(solved)return;cuts.clear();solved=false;layer.style.pointerEvents='';
+      status.textContent='';render();speak(t('다시 잘라봐요!','Let\'s cut again!'));};
+    box.append(resetBtn);
     function gapCenters(){const cs=[];for(let i=0;i<tiles.length-1;i++){
       const a=tiles[i].getBoundingClientRect(),b=tiles[i+1].getBoundingClientRect();cs.push({i,x:(a.right+b.left)/2});}return cs;}
     let down=false,x0,y0;
