@@ -37,8 +37,19 @@ const LESSONS = [
          en:"AI makes sentences by guessing the next word. What goes in the blank?"}},
 ];
 
+let VOICES=[];
+function loadVoices(){try{VOICES=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){VOICES=[];}}
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+function pickVoice(lang){const base=lang.split('-')[0];
+  return VOICES.find(v=>v.lang&&v.lang.replace('_','-').toLowerCase()===lang.toLowerCase())
+      || VOICES.find(v=>v.lang&&v.lang.toLowerCase().startsWith(base))
+      || null;}
 function speak(s){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(s);u.lang=LANG==='ko'?'ko-KR':'en-US';u.rate=0.95;u.pitch=1.1;speechSynthesis.speak(u);}catch(e){}}
+  if(!VOICES.length)loadVoices();
+  const lang=LANG==='ko'?'ko-KR':'en-US';
+  const u=new SpeechSynthesisUtterance(s);u.lang=lang;
+  const v=pickVoice(lang);if(v)u.voice=v;
+  u.rate=0.95;u.pitch=1.1;speechSynthesis.speak(u);}catch(e){}}
 
 function el(tag,attrs,txt){const n=document.createElement(tag);
   if(attrs)for(const k in attrs){if(k==='class')n.className=attrs[k];else n.setAttribute(k,attrs[k]);}
