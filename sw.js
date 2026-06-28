@@ -1,5 +1,5 @@
 /* 라이미의 AI 언어 연구소 — 서비스 워커 (오프라인 캐시) */
-const CACHE = 'raim-ai-v5';
+const CACHE = 'raim-ai-v6';
 const ASSETS = [
   './',
   './index.html',

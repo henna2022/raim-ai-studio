@@ -180,12 +180,16 @@ function runRounds(stage, rounds, c, finalReveal){
     const area=el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:16px;'});
     stage.appendChild(area);
     rounds[i].fn(area, (ok)=>{
-      const note = ok===false
-        ? t('🔮 AI는 생각이 조금 다른 것 같아요. 어떤 막대가 가장 높은지 볼까요?',
-            '🔮 Hmm, AI was thinking of something different. Which bar is the tallest?')
-        : rounds[i].note;
-      if(i<rounds.length-1) showNote(note, t('다음 ▶','Next ▶'), ()=>{i++;go();});
-      else finish(c, finalReveal);
+      const last = i>=rounds.length-1;
+      if(ok===false){
+        const wrongNote = t('🔮 AI는 생각이 조금 다른 것 같아요. 어떤 막대가 가장 높은지 볼까요?',
+            '🔮 Hmm, AI was thinking of something different. Which bar is the tallest?');
+        showNote(wrongNote, t('다음 ▶','Next ▶'), last ? ()=>finish(c, finalReveal) : ()=>{i++;go();});
+      } else if(last){
+        finish(c, finalReveal);
+      } else {
+        showNote(rounds[i].note, t('다음 ▶','Next ▶'), ()=>{i++;go();});
+      }
     });
   }
   go();
@@ -458,7 +462,7 @@ function predictRound(prefix, options, suffix){
       const btn=el('div',{class:'chip'},o.w);
       btn.onclick=()=>{row.querySelectorAll('.chip').forEach(x=>x.style.pointerEvents='none');bars.classList.remove('hidden');
         requestAnimationFrame(()=>{[...bars.querySelectorAll('.fill')].forEach((f,i)=>f.style.width=options[i].p+'%');});
-        speak(o.ok? t('정답이에요! 잘했어요!','Correct! Great job!') : t('좋아요! 그런데 AI 생각은 조금 다르네요, 막대를 볼까요?','Nice try, great pick! AI thinks a bit differently — look at the bars.'));
+        speak(o.ok? t('정답이에요! 잘했어요!','Correct! Great job!') : t('AI는 생각이 조금 다른 것 같아요. 막대를 볼까요?','Hmm, AI was thinking of something different. Look at the bars.'));
         setTimeout(()=>onDone(!!o.ok),1500);
       };
       row.appendChild(btn);
