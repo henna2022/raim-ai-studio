@@ -443,9 +443,9 @@ function gameAttention(stage,c){
 }
 
 /* ===== 5. 예측 ===== */
-function predictRound(prefix, options){
+function predictRound(prefix, options, suffix){
   return (box,onDone)=>{
-    const q=el('div',{class:'sentence'}); q.innerHTML=prefix+' <b style="color:var(--c5)">＿＿</b>';
+    const q=el('div',{class:'sentence'}); q.innerHTML=prefix+' <b style="color:var(--c5)">＿＿</b>'+(suffix?' '+suffix:'');
     const row=el('div',{class:'row'}); const bars=el('div',{class:'bars hidden'});
     options.forEach(o=>{
       const b=el('div',{class:'bar'});
@@ -473,11 +473,11 @@ function gamePredict(stage,c){
       {fn:predictRound('🏰 용감한 기사가 무서운 용을 물리치고 공주님을 구하러 성으로 힘차게',
         [{w:'달려갔어요',p:74,ok:true},{w:'기어갔어요',p:9},{w:'날아갔어요',p:17}]),
        note:'🔮 문장이 길어도 앞 내용을 보고 가장 어울리는 말을 골랐어요!'},
-      {fn:predictRound('🌊 더운 여름날, 아이들은 시원한 바다에서 신나게 물놀이를 하고 모래로 멋진',
-        [{w:'성을',p:70,ok:true},{w:'라면을',p:10},{w:'우산을',p:20}]),
-       note:'🔮 어려운 문장에서도 AI는 다음 단어를 척척 맞혀요!'},
-      {fn:predictRound('🚀 우주 비행사가 반짝이는 별들을 지나 깜깜하고 끝없이 넓은 우주를',
-        [{w:'여행했어요',p:72,ok:true},{w:'빨래했어요',p:8},{w:'먹었어요',p:20}]), note:''}
+      {fn:predictRound('🌊 아이들이 바닷가에서 모래로 멋진',
+        [{w:'성을',p:70,ok:true},{w:'라면을',p:10},{w:'우산을',p:20}], '만들었어요.'),
+       note:'🔮 어려운 문장에서도 AI는 빈칸에 올 말을 척척 맞혀요!'},
+      {fn:predictRound('🚀 우주 비행사가 하늘에서 반짝이는',
+        [{w:'별을',p:72,ok:true},{w:'양말을',p:8},{w:'바나나를',p:20}], '보았어요.'), note:''}
     ];
   } else {
     rounds=[
@@ -488,11 +488,11 @@ function gamePredict(stage,c){
       {fn:predictRound('🏰 The brave knight beat the scary dragon and rushed to the castle to save the',
         [{w:'princess',p:74,ok:true},{w:'potato',p:9},{w:'pillow',p:17}]),
        note:'🔮 Even in a long sentence, AI picks the word that fits best!'},
-      {fn:predictRound('🌊 On a hot summer day, the kids splashed in the cool sea and built a big sandcastle on the',
-        [{w:'beach',p:70,ok:true},{w:'moon',p:10},{w:'table',p:20}]),
-       note:'🔮 Even in a tricky sentence, AI guesses the next word!'},
-      {fn:predictRound('🚀 The astronaut flew past the shining stars and explored the dark endless',
-        [{w:'space',p:72,ok:true},{w:'sandwich',p:8},{w:'sock',p:20}]), note:''}
+      {fn:predictRound('🌊 The kids built a nice',
+        [{w:'sandcastle',p:70,ok:true},{w:'noodle',p:10},{w:'umbrella',p:20}], 'on the beach.'),
+       note:'🔮 Even in a tricky sentence, AI guesses the blank!'},
+      {fn:predictRound('🚀 The astronaut saw a bright',
+        [{w:'star',p:72,ok:true},{w:'sock',p:8},{w:'banana',p:20}], 'in the sky.'), note:''}
     ];
   }
   runRounds(stage, rounds, c,
