@@ -14,24 +14,63 @@ const ATTO = `
   <rect x="34" y="70" width="32" height="20" rx="9" fill="#56c596"/>
 </g>`;
 
+/* ---------- 섹션 일러스트 (96x96, 두꺼운 외곽선 카툰 스타일) ---------- */
+const ART1 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g stroke="#3a2f2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="9" y="54" width="22" height="27" rx="6" fill="#ffd9c7"/>
+  <rect x="37" y="54" width="22" height="27" rx="6" fill="#ffb796"/>
+  <rect x="65" y="54" width="22" height="27" rx="6" fill="#ff8a5c"/>
+  <circle cx="27" cy="20" r="6.5" fill="#fff"/><circle cx="27" cy="38" r="6.5" fill="#fff"/>
+  <path d="M32 22 L71 41" fill="none"/><path d="M32 36 L71 17" fill="none"/>
+  <circle cx="51" cy="29" r="2.4" fill="#3a2f2a" stroke="none"/></g></svg>`;
+
+const ART2 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g stroke="#3a2f2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M12 28 L36 22 L60 28 L84 22 L84 70 L60 76 L36 70 L12 76 Z" fill="#eafff3"/>
+  <path d="M36 22 L36 70" fill="none" stroke-width="2.4" stroke-dasharray="3 4"/>
+  <path d="M60 28 L60 76" fill="none" stroke-width="2.4" stroke-dasharray="3 4"/>
+  <path d="M26 34 a8 8 0 0 1 8 8 c0 6 -8 14 -8 14 c0 0 -8 -8 -8 -14 a8 8 0 0 1 8 -8 z" fill="#56c596"/>
+  <circle cx="26" cy="42" r="3" fill="#fff"/>
+  <path d="M64 40 a7 7 0 0 1 7 7 c0 5 -7 12 -7 12 c0 0 -7 -7 -7 -12 a7 7 0 0 1 7 -7 z" fill="#ff8a5c"/>
+  <circle cx="64" cy="47" r="2.6" fill="#fff"/></g></svg>`;
+
+const ART3 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g stroke="#3a2f2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M24 30 q24 -15 47 0" fill="none"/><path d="M71 30 l-8 -2 M71 30 l-3 -8" fill="none"/>
+  <rect x="11" y="44" width="22" height="31" rx="6" fill="#c2dcff"/>
+  <rect x="37" y="44" width="22" height="31" rx="6" fill="#8dbcff"/>
+  <rect x="63" y="44" width="22" height="31" rx="6" fill="#6aa8ff"/>
+  <text x="22" y="66" font-family="Jua, sans-serif" font-size="19" fill="#3a2f2a" stroke="none" text-anchor="middle">1</text>
+  <text x="48" y="66" font-family="Jua, sans-serif" font-size="19" fill="#3a2f2a" stroke="none" text-anchor="middle">2</text>
+  <text x="74" y="66" font-family="Jua, sans-serif" font-size="19" fill="#3a2f2a" stroke="none" text-anchor="middle">3</text></g></svg>`;
+
+const ART4 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g stroke="#3a2f2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M58 36 L88 23 L88 65 L58 52 Z" fill="#ffe7a0"/>
+  <rect x="18" y="38" width="32" height="14" rx="5" fill="#ffc23c"/>
+  <rect x="48" y="33" width="14" height="24" rx="4" fill="#ffd66b"/>
+  <path d="M75 39 l1.6 4.4 4.4 1.6 -4.4 1.6 -1.6 4.4 -1.6 -4.4 -4.4 -1.6 4.4 -1.6 z" fill="#fff" stroke-width="2"/></g></svg>`;
+
+const ART5 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g stroke="#3a2f2a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M28 79 L68 79 L60 66 L36 66 Z" fill="#c78bff"/>
+  <circle cx="48" cy="42" r="23" fill="#efe2ff"/>
+  <path d="M38 34 a12 12 0 0 1 9 -7" fill="none" stroke="#fff" stroke-width="4"/>
+  <path d="M48 35 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 z" fill="#c78bff" stroke-width="2"/></g></svg>`;
+
 const LESSONS = [
-  {c:1,emoji:"✂️",
+  {c:1,emoji:"✂️",art:ART1,
    name:{ko:"단어 쪼개기",en:"Split the Words"}, tag:{ko:"토큰화",en:"Tokenization"},
    hook:{ko:"AI는 긴 문장을 한 번에 못 읽어요. 글자 사이를 손가락으로 그어서 단어로 나눠 볼까요?",
          en:"AI can't read a long sentence all at once. Slide your finger between the letters to split it into words!"}},
-  {c:2,emoji:"🗺️",
+  {c:2,emoji:"🗺️",art:ART2,
    name:{ko:"단어 지도",en:"Word Map"}, tag:{ko:"임베딩",en:"Embedding"},
    hook:{ko:"비슷한 단어끼리는 가까운 마을에 살아요. 단어를 알맞은 마을로 보내 줄까요?",
          en:"Similar words live in nearby towns. Can you drag each word to the right town?"}},
-  {c:3,emoji:"🔀",
+  {c:3,emoji:"🔀",art:ART3,
    name:{ko:"순서의 중요성",en:"Order Matters"}, tag:{ko:"위치",en:"Position"},
    hook:{ko:"순서를 모르면 AI는 단어를 뒤죽박죽으로 봐요! 순서대로 클릭해 문장을 완성시켜볼까요?",
          en:"Without order, AI sees words all jumbled up! Tap them in order to complete the sentence!"}},
-  {c:4,emoji:"🔦",
+  {c:4,emoji:"🔦",art:ART4,
    name:{ko:"스포트라이트 탐정",en:"Spotlight Detective"}, tag:{ko:"어텐션",en:"Attention"},
    hook:{ko:"이게 제일 중요한 비밀이에요! 헷갈릴 땐 어떤 단어를 봐야 할까요? 정답 단어를 눌러 주세요.",
          en:"This is the most important secret! When things are confusing, which word should we look at? Tap the right word."}},
-  {c:5,emoji:"🔮",
+  {c:5,emoji:"🔮",art:ART5,
    name:{ko:"다음 단어 맞히기",en:"Guess the Next Word"}, tag:{ko:"예측",en:"Prediction"},
    hook:{ko:"AI는 다음에 올 단어를 맞혀서 말을 만들어요. 빈칸에 어떤 말이 올까요?",
          en:"AI makes sentences by guessing the next word. What goes in the blank?"}},
@@ -101,7 +140,7 @@ function renderHome(){
   LESSONS.forEach(l=>{
     const card=el('div',{class:'card'+(done.has(l.c)?' done':'')}); card.setAttribute('data-c',l.c);
     card.innerHTML=`<div class="num">${l.c}</div>${done.has(l.c)?'<div class="done-badge">✓</div>':''}
-      <div class="emoji">${l.emoji}</div><div class="name">${l.name[LANG]}</div><div class="tag">${l.tag[LANG]}</div>`;
+      <div class="art">${l.art}</div><div class="name">${l.name[LANG]}</div><div class="tag">${l.tag[LANG]}</div>`;
     card.onclick=()=>openLesson(l.c);
     wrap.appendChild(card);
   });
