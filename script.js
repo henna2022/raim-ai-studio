@@ -478,3 +478,16 @@ document.getElementById('langBtn2').onclick=toggleLang;
 ['resetHome','resetGame','resetDone'].forEach(id=>document.getElementById(id).onclick=resetAll);
 document.getElementById('doneBtn').onclick=resetAll;
 applyLang();
+
+/* ---------- 무동작 타임아웃: 2분간 터치가 없으면 처음 화면으로 ---------- */
+const IDLE_MS=120000;
+let idleTimer=null;
+function resetIdle(){
+  if(idleTimer)clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{
+    if(!document.getElementById('start').classList.contains('active')) resetAll();
+  },IDLE_MS);
+}
+['pointerdown','touchstart','keydown'].forEach(ev=>
+  document.addEventListener(ev,resetIdle,{passive:true}));
+resetIdle();
