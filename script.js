@@ -519,12 +519,84 @@ function fire(){const e=['🎉','⭐','🎊','🏅','✨'];
 /* ---------- 초기화/연결 ---------- */
 document.getElementById('attoStart').src=RAIMI_IMG;
 document.getElementById('raimiBig').src=RAIMI_IMG;
-document.getElementById('startBtn').onclick=()=>{renderHome();show('home');};
+document.getElementById('startBtn').onclick=()=>{bumpStart();renderHome();show('home');};
 document.getElementById('langBtn').onclick=toggleLang;
 document.getElementById('langBtn2').onclick=toggleLang;
 ['resetHome','resetGame','resetDone'].forEach(id=>document.getElementById(id).onclick=resetAll);
 document.getElementById('doneBtn').onclick=resetAll;
 applyLang();
+
+/* ---------- 이용 통계: 하루에 '시작하기'를 누른 횟수(≈이용자 수) ---------- */
+const STAT_KEY='raimi_start_stats';
+function todayKey(){const d=new Date();const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function loadStats(){try{return JSON.parse(localStorage.getItem(STAT_KEY))||{};}catch(e){return {};}}
+function saveStats(s){try{localStorage.setItem(STAT_KEY,JSON.stringify(s));}catch(e){}}
+function bumpStart(){const s=loadStats();const k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);}
+
+/* 관리자 통계 화면 (숨김): 좌측 상단 로고를 2.5초 안에 5번 탭하면 열림 */
+let adminOpen=false;
+function openAdmin(){
+  if(adminOpen)return; adminOpen=true;
+  const s=loadStats();
+  const dates=Object.keys(s).sort().reverse();
+  const total=dates.reduce((a,k)=>a+s[k],0);
+  const today=s[todayKey()]||0;
+
+  const ov=el('div',{id:'adminOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
+  const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;max-width:520px;width:100%;max-height:86vh;display:flex;flex-direction:column;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
+  card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'📊 이용 통계 (관리자)'));
+  card.append(el('div',{style:'font-size:15px;color:#555;margin-bottom:14px;'},
+    '오늘 '+todayKey()+' · 시작 '+today+'회   |   전체 '+total+'회 · '+dates.length+'일 기록'));
+
+  const list=el('div',{style:'overflow:auto;border:1px solid #eee;border-radius:12px;'});
+  const table=el('table',{style:'width:100%;border-collapse:collapse;font-size:15px;'});
+  const head=el('tr',{});
+  head.append(el('th',{style:'text-align:left;padding:9px 12px;background:#f6f6f8;position:sticky;top:0;'},'날짜'));
+  head.append(el('th',{style:'text-align:right;padding:9px 12px;background:#f6f6f8;position:sticky;top:0;'},'시작 횟수(≈이용자)'));
+  table.append(head);
+  if(dates.length===0){
+    const tr=el('tr',{}); tr.append(el('td',{colspan:'2',style:'padding:18px;text-align:center;color:#999;'},'아직 기록이 없어요'));
+    table.append(tr);
+  } else dates.forEach(k=>{
+    const tr=el('tr',{});
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;'},k));
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;font-weight:600;'},String(s[k])));
+    table.append(tr);
+  });
+  list.append(table); card.append(list);
+
+  const btns=el('div',{style:'display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;'});
+  const mkBtn=(label,bg,fn)=>{const b=el('button',{style:'flex:1;min-width:120px;padding:12px;border:0;border-radius:12px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;background:'+bg+';'},label);b.onclick=fn;return b;};
+  btns.append(mkBtn('CSV 복사','#3b82f6',()=>{
+    const csv='date,starts\n'+dates.map(k=>k+','+s[k]).join('\n');
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(csv).then(()=>alert('복사되었어요! 스프레드시트에 붙여넣기 하세요.'),()=>prompt('아래를 복사하세요',csv));
+    } else prompt('아래를 복사하세요',csv);
+  }));
+  btns.append(mkBtn('기록 지우기','#ef4444',()=>{
+    if(confirm('모든 통계 기록을 삭제할까요? 되돌릴 수 없어요.')){saveStats({});closeAdmin();}
+  }));
+  btns.append(mkBtn('닫기','#6b7280',closeAdmin));
+  card.append(btns);
+  ov.append(card);
+  ov.onclick=(e)=>{if(e.target===ov)closeAdmin();};
+  document.body.append(ov);
+}
+function closeAdmin(){const ov=document.getElementById('adminOverlay');if(ov)ov.remove();adminOpen=false;}
+(function(){
+  let taps=0,timer=null;
+  document.querySelectorAll('.brand-logo').forEach(logo=>{
+    logo.addEventListener('click',()=>{
+      taps++;
+      if(timer)clearTimeout(timer);
+      timer=setTimeout(()=>{taps=0;},2500);
+      if(taps>=5){taps=0;clearTimeout(timer);openAdmin();}
+    });
+  });
+})();
+/* 주소 뒤에 ?admin 을 붙이면 바로 관리자 통계 화면을 연다 */
+try{ if(new URLSearchParams(location.search).has('admin')) openAdmin(); }catch(e){}
 
 /* ---------- 무동작 타임아웃: 2분간 터치가 없으면 처음 화면으로 ---------- */
 const IDLE_MS=120000;
@@ -532,6 +604,7 @@ let idleTimer=null;
 function resetIdle(){
   if(idleTimer)clearTimeout(idleTimer);
   idleTimer=setTimeout(()=>{
+    if(adminOpen)return;
     if(!document.getElementById('start').classList.contains('active')) resetAll();
   },IDLE_MS);
 }
