@@ -534,6 +534,193 @@ function loadStats(){try{return JSON.parse(localStorage.getItem(STAT_KEY))||{};}
 function saveStats(s){try{localStorage.setItem(STAT_KEY,JSON.stringify(s));}catch(e){}}
 function bumpStart(){const s=loadStats();const k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);}
 
+/* ---------- 엑셀(.xlsx) 만들기: 외부 라이브러리 없이 store 방식 ZIP으로 생성 ---------- */
+const CRC_TABLE=(function(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(bytes){let crc=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)crc=(crc>>>8)^CRC_TABLE[(crc^bytes[i])&0xFF];return (crc^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder();
+  const u16=n=>[n&255,(n>>>8)&255];
+  const u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255];
+  const locals=[],central=[];let offset=0;
+  files.forEach(f=>{
+    const nameB=enc.encode(f.name);
+    const data=f.data instanceof Uint8Array?f.data:enc.encode(f.data);
+    const crc=crc32(data),len=data.length;
+    const lh=[0x50,0x4b,0x03,0x04].concat(u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(len),u32(len),u16(nameB.length),u16(0));
+    const lb=new Uint8Array(lh.length+nameB.length+len);
+    lb.set(lh,0);lb.set(nameB,lh.length);lb.set(data,lh.length+nameB.length);
+    locals.push(lb);
+    const ch=[0x50,0x4b,0x01,0x02].concat(u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(len),u32(len),u16(nameB.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset));
+    const cb=new Uint8Array(ch.length+nameB.length);
+    cb.set(ch,0);cb.set(nameB,ch.length);
+    central.push(cb);
+    offset+=lb.length;
+  });
+  let cSize=0;central.forEach(c=>cSize+=c.length);
+  const eocd=Uint8Array.from([0x50,0x4b,0x05,0x06].concat(u16(0),u16(0),u16(central.length),u16(central.length),u32(cSize),u32(offset),u16(0)));
+  let total=eocd.length+cSize;locals.forEach(l=>total+=l.length);
+  const out=new Uint8Array(total);let pos=0;
+  locals.forEach(l=>{out.set(l,pos);pos+=l.length;});
+  central.forEach(c=>{out.set(c,pos);pos+=c.length;});
+  out.set(eocd,pos);
+  return out;
+}
+/* ---------- 워크시트/워크북 조립 (여러 시트 지원) ---------- */
+function xmlEsc(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function colLetter(i){let s='';i++;while(i>0){const r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=(i-r-1)/26;}return s;}
+const STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEFEFF4"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+/* 스타일 id: 1=헤더(굵게+음영), 2=제목(굵게 크게), 3=굵게 */
+function cellXml(c,ref){
+  if(c==null)return '';
+  if(typeof c!=='object')c={v:c};
+  const st=c.s?' s="'+c.s+'"':'';
+  if(c.v==null||c.v==='')return c.s?'<c r="'+ref+'"'+st+'/>':'';
+  if(typeof c.v==='number'&&isFinite(c.v))return '<c r="'+ref+'"'+st+'><v>'+c.v+'</v></c>';
+  return '<c r="'+ref+'" t="inlineStr"'+st+'><is><t>'+xmlEsc(c.v)+'</t></is></c>';
+}
+function buildSheetXml(sheet){
+  const rowsXml=sheet.rows.map((row,ri)=>{
+    const r=ri+1;
+    const cells=(row||[]).map((c,ci)=>cellXml(c,colLetter(ci)+r)).join('');
+    return '<row r="'+r+'">'+cells+'</row>';
+  }).join('');
+  const cols=sheet.colWidths?'<cols>'+sheet.colWidths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols>':'';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+cols+'<sheetData>'+rowsXml+'</sheetData></worksheet>';
+}
+function buildWorkbook(sheets){
+  const N=sheets.length;
+  const ctOv=sheets.map((sh,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('');
+  const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+ctOv+'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  const sheetTags=sheets.map((sh,i)=>'<sheet name="'+xmlEsc(sh.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('');
+  const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheetTags+'</sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((sh,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'<Relationship Id="rId'+(N+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  const files=[
+    {name:'[Content_Types].xml',data:contentTypes},
+    {name:'_rels/.rels',data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+    {name:'xl/workbook.xml',data:workbook},
+    {name:'xl/_rels/workbook.xml.rels',data:wbRels}
+  ];
+  sheets.forEach((sh,i)=>files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:buildSheetXml(sh)}));
+  files.push({name:'xl/styles.xml',data:STYLES_XML});
+  return zipStore(files);
+}
+
+/* ---------- 통계 집계: 날짜별 데이터에서 주차/월/요일 등 분석 파생 ---------- */
+const WEEKDAYS=['일','월','화','수','목','금','토'];
+function statPad(n){return String(n).padStart(2,'0');}
+function statFmt(dt){return dt.getFullYear()+'-'+statPad(dt.getMonth()+1)+'-'+statPad(dt.getDate());}
+function statParse(k){const p=k.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function round1(x){return Math.round(x*10)/10;}
+function aggWeekly(s){
+  const map={};
+  Object.keys(s).forEach(k=>{
+    const dt=statParse(k),back=(dt.getDay()+6)%7,mon=new Date(dt);
+    mon.setDate(dt.getDate()-back);
+    const wk=statFmt(mon);
+    if(!map[wk])map[wk]={sum:0,days:0,mon:mon};
+    map[wk].sum+=s[k];map[wk].days++;
+  });
+  return Object.keys(map).sort().map(wk=>{
+    const o=map[wk],end=new Date(o.mon);end.setDate(o.mon.getDate()+6);
+    return {week:wk,range:statPad(o.mon.getMonth()+1)+'/'+statPad(o.mon.getDate())+'~'+statPad(end.getMonth()+1)+'/'+statPad(end.getDate()),sum:o.sum,days:o.days,avg:o.sum/o.days};
+  });
+}
+function aggMonthly(s){
+  const map={};
+  Object.keys(s).forEach(k=>{const mk=k.slice(0,7);if(!map[mk])map[mk]={sum:0,days:0};map[mk].sum+=s[k];map[mk].days++;});
+  const keys=Object.keys(map).sort();
+  return keys.map((mk,i)=>{
+    const o=map[mk],prev=i>0?map[keys[i-1]].sum:null;
+    let chg='-';
+    if(prev!=null)chg=prev===0?'신규':((o.sum-prev>=0?'+':'')+round1((o.sum-prev)/prev*100)+'%');
+    return {month:mk,sum:o.sum,days:o.days,avg:o.sum/o.days,change:chg};
+  });
+}
+function aggWeekday(s){
+  const tot=[0,0,0,0,0,0,0],days=[0,0,0,0,0,0,0];
+  Object.keys(s).forEach(k=>{const g=statParse(k).getDay();tot[g]+=s[k];days[g]++;});
+  return [1,2,3,4,5,6,0].map(g=>({wd:WEEKDAYS[g],sum:tot[g],days:days[g],avg:days[g]?tot[g]/days[g]:0}));
+}
+function buildReportRows(s,today){
+  const dates=Object.keys(s).sort();
+  const total=dates.reduce((a,k)=>a+s[k],0);
+  const first=dates[0],last=dates[dates.length-1];
+  const span=Math.round((statParse(last)-statParse(first))/86400000)+1;
+  const active=dates.length;
+  const peak=dates.reduce((a,k)=>s[k]>s[a]?k:a,dates[0]);
+  const low=dates.reduce((a,k)=>s[k]<s[a]?k:a,dates[0]);
+  const months=aggMonthly(s),weeks=aggWeekly(s);
+  const cur=months[months.length-1],prev=months.length>1?months[months.length-2]:null;
+  const wd=aggWeekday(s).slice().sort((a,b)=>b.sum-a.sum);
+  const busiest=wd[0],quiet=wd[wd.length-1];
+  const rows=[];
+  const KV=(k,v)=>rows.push([k,{v:v}]);
+  rows.push([{v:'📊 라이미 이용 통계 리포트',s:2}]);
+  rows.push([{v:'생성일'},{v:today}]);
+  rows.push([]);
+  rows.push([{v:'전체 요약',s:1},{v:'',s:1}]);
+  KV('집계 기간',first+' ~ '+last);
+  KV('총 시작 횟수',total);
+  KV('기록된 날짜 수(활동일)',active);
+  KV('전체 기간(일)',span);
+  KV('활동일 평균(회/일)',round1(total/active));
+  KV('전체 기간 평균(회/일)',round1(total/span));
+  KV('주당 평균(회/주)',round1(total/weeks.length));
+  rows.push([]);
+  rows.push([{v:'이번 달 ('+cur.month+')',s:1},{v:'',s:1}]);
+  KV('시작 횟수',cur.sum);
+  KV('활동일수',cur.days);
+  KV('일평균(회/일)',round1(cur.avg));
+  KV('전월 대비',cur.change);
+  if(prev)KV('지난 달('+prev.month+') 시작 횟수',prev.sum);
+  rows.push([]);
+  rows.push([{v:'최고 / 최저',s:1},{v:'',s:1}]);
+  KV('최다 기록일',peak+' ('+s[peak]+'회)');
+  KV('최소 기록일',low+' ('+s[low]+'회)');
+  rows.push([]);
+  rows.push([{v:'요일 분석',s:1},{v:'',s:1}]);
+  KV('가장 활발한 요일',busiest.wd+'요일 (총 '+busiest.sum+'회)');
+  KV('가장 한산한 요일',quiet.wd+'요일 (총 '+quiet.sum+'회)');
+  return rows;
+}
+/* 여러 시트로 구성된 분석 리포트 워크북 생성 */
+function buildStatsXlsx(s){
+  const today=todayKey();
+  const dates=Object.keys(s).sort();
+  const total=dates.reduce((a,k)=>a+s[k],0);
+  const H=t=>({v:t,s:1});
+  /* 1) 요약 리포트 */
+  const report={name:'요약 리포트',colWidths:[26,24],rows:buildReportRows(s,today)};
+  /* 2) 날짜별 (+ 누적) */
+  const dailyRows=[[H('날짜'),H('시작 횟수'),H('누적')]];
+  let cum=0;dates.forEach(k=>{cum+=s[k];dailyRows.push([k,s[k],cum]);});
+  dailyRows.push([{v:'합계',s:3},{v:total,s:3},{v:'',s:3}]);
+  const daily={name:'날짜별',colWidths:[14,12,12],rows:dailyRows};
+  /* 3) 주차별 (월요일 시작) */
+  const wk=aggWeekly(s);
+  const weeklyRows=[[H('주 시작(월)'),H('기간'),H('시작 횟수'),H('활동일수'),H('일평균')]];
+  wk.forEach(w=>weeklyRows.push([w.week,w.range,w.sum,w.days,round1(w.avg)]));
+  const weekly={name:'주차별',colWidths:[14,14,12,10,10],rows:weeklyRows};
+  /* 4) 월별 (전월 대비 포함) */
+  const mo=aggMonthly(s);
+  const monthlyRows=[[H('월'),H('시작 횟수'),H('활동일수'),H('일평균'),H('전월 대비')]];
+  mo.forEach(m=>monthlyRows.push([m.month,m.sum,m.days,round1(m.avg),m.change]));
+  const monthly={name:'월별',colWidths:[12,12,10,10,12],rows:monthlyRows};
+  /* 5) 요일별 */
+  const wdA=aggWeekday(s);
+  const wdRows=[[H('요일'),H('시작 횟수'),H('활동일수'),H('일평균')]];
+  wdA.forEach(w=>wdRows.push([w.wd+'요일',w.sum,w.days,round1(w.avg)]));
+  const weekday={name:'요일별',colWidths:[10,12,10,10],rows:wdRows};
+  return buildWorkbook([report,daily,weekly,monthly,weekday]);
+}
+function downloadBytes(bytes,filename){
+  const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=el('a',{href:url,download:filename});
+  document.body.append(a);a.click();
+  setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},1500);
+}
+
 /* 관리자 통계 화면 (숨김): 좌측 상단 로고를 2.5초 안에 5번 탭하면 열림 */
 let adminOpen=false;
 function openAdmin(){
@@ -573,6 +760,12 @@ function openAdmin(){
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(csv).then(()=>alert('복사되었어요! 스프레드시트에 붙여넣기 하세요.'),()=>prompt('아래를 복사하세요',csv));
     } else prompt('아래를 복사하세요',csv);
+  }));
+  btns.append(mkBtn('엑셀 리포트','#16a34a',()=>{
+    try{
+      if(dates.length===0){alert('내보낼 기록이 없어요.');return;}
+      downloadBytes(buildStatsXlsx(s),'라이미_이용통계_리포트_'+todayKey()+'.xlsx');
+    }catch(e){alert('엑셀 파일을 만들지 못했어요: '+(e&&e.message||e));}
   }));
   btns.append(mkBtn('기록 지우기','#ef4444',()=>{
     if(confirm('모든 통계 기록을 삭제할까요? 되돌릴 수 없어요.')){saveStats({});closeAdmin();}
