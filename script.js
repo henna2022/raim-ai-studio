@@ -164,8 +164,10 @@ function showNote(html,label,fn){
   r.classList.add('show');
 }
 function finish(c, html){
+  const before=done.size;
   done.add(c);
   const all=done.size>=5;
+  if(all && before<5) bumpComplete();   // 5번째 도장을 방금 채운 순간 1회만 기록
   const r=document.getElementById('reveal'); r.innerHTML=html+'<div class="btnrow"></div>';
   const b=el('button',{class:'btn '+(all?'go':'home')}, all? t('🎉 도장 5개 완성!','🎉 All 5 stamps!') : t('🏠 처음으로','🏠 Home'));
   b.onclick = all? showComplete : ()=>{renderHome();show('home');};
@@ -526,13 +528,23 @@ document.getElementById('langBtn2').onclick=toggleLang;
 document.getElementById('doneBtn').onclick=resetAll;
 applyLang();
 
-/* ---------- 이용 통계: 하루에 '시작하기'를 누른 횟수(≈이용자 수) ---------- */
-const STAT_KEY='raimi_start_stats';
+/* ---------- 이용 통계 ---------- */
+/* 시작: 하루에 '시작하기'를 누른 횟수(≈이용자 수) / 완주: 도장 5개를 모두 채운 횟수 / 시간대: 시작한 시각(0~23시) */
+const STAT_KEY='raimi_start_stats';     // {날짜: 시작 횟수}
+const DONE_KEY='raimi_complete_stats';  // {날짜: 완주 횟수}
+const HOUR_KEY='raimi_hour_stats';      // {'00'~'23': 시작 횟수} (전체 누적)
 function todayKey(){const d=new Date();const p=n=>String(n).padStart(2,'0');
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
-function loadStats(){try{return JSON.parse(localStorage.getItem(STAT_KEY))||{};}catch(e){return {};}}
-function saveStats(s){try{localStorage.setItem(STAT_KEY,JSON.stringify(s));}catch(e){}}
-function bumpStart(){const s=loadStats();const k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);}
+function statGet(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch(e){return {};}}
+function statSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function loadStats(){return statGet(STAT_KEY);}
+function saveStats(s){statSet(STAT_KEY,s);}
+function bumpStart(){
+  const s=loadStats(),k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);
+  const h=statGet(HOUR_KEY),hk=String(new Date().getHours()).padStart(2,'0');
+  h[hk]=(h[hk]||0)+1;statSet(HOUR_KEY,h);
+}
+function bumpComplete(){const c=statGet(DONE_KEY),k=todayKey();c[k]=(c[k]||0)+1;statSet(DONE_KEY,c);}
 
 /* ---------- 엑셀(.xlsx) 만들기: 외부 라이브러리 없이 store 방식 ZIP으로 생성 ---------- */
 const CRC_TABLE=(function(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
@@ -641,9 +653,18 @@ function aggWeekday(s){
   Object.keys(s).forEach(k=>{const g=statParse(k).getDay();tot[g]+=s[k];days[g]++;});
   return [1,2,3,4,5,6,0].map(g=>({wd:WEEKDAYS[g],sum:tot[g],days:days[g],avg:days[g]?tot[g]/days[g]:0}));
 }
-function buildReportRows(s,today){
+function aggHourly(hours){
+  const total=Object.keys(hours).reduce((a,k)=>a+hours[k],0);
+  const rows=[];
+  for(let h=0;h<24;h++){const hk=statPad(h),c=hours[hk]||0;rows.push({hour:hk+'시',sum:c,share:total?round1(c/total*100):0});}
+  return {rows,total};
+}
+/* 시작 대비 완주 비율(%) */
+function rateOf(done,start){return start?round1(done/start*100):0;}
+function buildReportRows(s,completes,hours,today){
   const dates=Object.keys(s).sort();
   const total=dates.reduce((a,k)=>a+s[k],0);
+  const totalDone=Object.keys(completes).reduce((a,k)=>a+completes[k],0);
   const first=dates[0],last=dates[dates.length-1];
   const span=Math.round((statParse(last)-statParse(first))/86400000)+1;
   const active=dates.length;
@@ -651,8 +672,11 @@ function buildReportRows(s,today){
   const low=dates.reduce((a,k)=>s[k]<s[a]?k:a,dates[0]);
   const months=aggMonthly(s),weeks=aggWeekly(s);
   const cur=months[months.length-1],prev=months.length>1?months[months.length-2]:null;
+  const curDone=Object.keys(completes).filter(k=>k.slice(0,7)===cur.month).reduce((a,k)=>a+completes[k],0);
   const wd=aggWeekday(s).slice().sort((a,b)=>b.sum-a.sum);
   const busiest=wd[0],quiet=wd[wd.length-1];
+  const hr=aggHourly(hours);
+  const hpeak=hr.rows.slice().sort((a,b)=>b.sum-a.sum)[0];
   const rows=[];
   const KV=(k,v)=>rows.push([k,{v:v}]);
   rows.push([{v:'📊 라이미 이용 통계 리포트',s:2}]);
@@ -661,6 +685,8 @@ function buildReportRows(s,today){
   rows.push([{v:'전체 요약',s:1},{v:'',s:1}]);
   KV('집계 기간',first+' ~ '+last);
   KV('총 시작 횟수',total);
+  KV('총 완주 횟수',totalDone);
+  KV('완주율(완주/시작)',rateOf(totalDone,total)+'%');
   KV('기록된 날짜 수(활동일)',active);
   KV('전체 기간(일)',span);
   KV('활동일 평균(회/일)',round1(total/active));
@@ -669,6 +695,8 @@ function buildReportRows(s,today){
   rows.push([]);
   rows.push([{v:'이번 달 ('+cur.month+')',s:1},{v:'',s:1}]);
   KV('시작 횟수',cur.sum);
+  KV('완주 횟수',curDone);
+  KV('완주율',rateOf(curDone,cur.sum)+'%');
   KV('활동일수',cur.days);
   KV('일평균(회/일)',round1(cur.avg));
   KV('전월 대비',cur.change);
@@ -678,40 +706,50 @@ function buildReportRows(s,today){
   KV('최다 기록일',peak+' ('+s[peak]+'회)');
   KV('최소 기록일',low+' ('+s[low]+'회)');
   rows.push([]);
-  rows.push([{v:'요일 분석',s:1},{v:'',s:1}]);
+  rows.push([{v:'요일 · 시간대 분석',s:1},{v:'',s:1}]);
   KV('가장 활발한 요일',busiest.wd+'요일 (총 '+busiest.sum+'회)');
   KV('가장 한산한 요일',quiet.wd+'요일 (총 '+quiet.sum+'회)');
+  KV('가장 붐비는 시간대',hr.total?hpeak.hour+' (총 '+hpeak.sum+'회)':'기록 없음');
   return rows;
 }
 /* 여러 시트로 구성된 분석 리포트 워크북 생성 */
 function buildStatsXlsx(s){
   const today=todayKey();
+  const completes=statGet(DONE_KEY),hours=statGet(HOUR_KEY);
   const dates=Object.keys(s).sort();
   const total=dates.reduce((a,k)=>a+s[k],0);
+  const totalDone=dates.reduce((a,k)=>a+(completes[k]||0),0);
   const H=t=>({v:t,s:1});
   /* 1) 요약 리포트 */
-  const report={name:'요약 리포트',colWidths:[26,24],rows:buildReportRows(s,today)};
-  /* 2) 날짜별 (+ 누적) */
-  const dailyRows=[[H('날짜'),H('시작 횟수'),H('누적')]];
-  let cum=0;dates.forEach(k=>{cum+=s[k];dailyRows.push([k,s[k],cum]);});
-  dailyRows.push([{v:'합계',s:3},{v:total,s:3},{v:'',s:3}]);
-  const daily={name:'날짜별',colWidths:[14,12,12],rows:dailyRows};
+  const report={name:'요약 리포트',colWidths:[26,24],rows:buildReportRows(s,completes,hours,today)};
+  /* 2) 날짜별 (시작·완주·완주율 + 누적) */
+  const dailyRows=[[H('날짜'),H('시작 횟수'),H('완주'),H('완주율'),H('누적 시작')]];
+  let cum=0;dates.forEach(k=>{cum+=s[k];const d=completes[k]||0;dailyRows.push([k,s[k],d,rateOf(d,s[k])+'%',cum]);});
+  dailyRows.push([{v:'합계',s:3},{v:total,s:3},{v:totalDone,s:3},{v:rateOf(totalDone,total)+'%',s:3},{v:'',s:3}]);
+  const daily={name:'날짜별',colWidths:[14,12,10,10,12],rows:dailyRows};
   /* 3) 주차별 (월요일 시작) */
   const wk=aggWeekly(s);
   const weeklyRows=[[H('주 시작(월)'),H('기간'),H('시작 횟수'),H('활동일수'),H('일평균')]];
   wk.forEach(w=>weeklyRows.push([w.week,w.range,w.sum,w.days,round1(w.avg)]));
   const weekly={name:'주차별',colWidths:[14,14,12,10,10],rows:weeklyRows};
-  /* 4) 월별 (전월 대비 포함) */
+  /* 4) 월별 (완주율·전월 대비 포함) */
   const mo=aggMonthly(s);
-  const monthlyRows=[[H('월'),H('시작 횟수'),H('활동일수'),H('일평균'),H('전월 대비')]];
-  mo.forEach(m=>monthlyRows.push([m.month,m.sum,m.days,round1(m.avg),m.change]));
-  const monthly={name:'월별',colWidths:[12,12,10,10,12],rows:monthlyRows};
+  const monthlyRows=[[H('월'),H('시작 횟수'),H('완주'),H('완주율'),H('활동일수'),H('일평균'),H('전월 대비')]];
+  mo.forEach(m=>{const d=Object.keys(completes).filter(k=>k.slice(0,7)===m.month).reduce((a,k)=>a+completes[k],0);
+    monthlyRows.push([m.month,m.sum,d,rateOf(d,m.sum)+'%',m.days,round1(m.avg),m.change]);});
+  const monthly={name:'월별',colWidths:[12,12,10,10,10,10,12],rows:monthlyRows};
   /* 5) 요일별 */
   const wdA=aggWeekday(s);
   const wdRows=[[H('요일'),H('시작 횟수'),H('활동일수'),H('일평균')]];
   wdA.forEach(w=>wdRows.push([w.wd+'요일',w.sum,w.days,round1(w.avg)]));
   const weekday={name:'요일별',colWidths:[10,12,10,10],rows:wdRows};
-  return buildWorkbook([report,daily,weekly,monthly,weekday]);
+  /* 6) 시간대별 (0~23시, 시작 시각 기준) */
+  const hr=aggHourly(hours);
+  const hourRows=[[H('시간대'),H('시작 횟수'),H('비율')]];
+  hr.rows.forEach(h=>hourRows.push([h.hour,h.sum,h.share+'%']));
+  hourRows.push([{v:'합계',s:3},{v:hr.total,s:3},{v:'',s:3}]);
+  const hourly={name:'시간대별',colWidths:[10,12,10],rows:hourRows};
+  return buildWorkbook([report,daily,weekly,monthly,weekday,hourly]);
 }
 function downloadBytes(bytes,filename){
   const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -726,29 +764,38 @@ let adminOpen=false;
 function openAdmin(){
   if(adminOpen)return; adminOpen=true;
   const s=loadStats();
+  const completes=statGet(DONE_KEY);
   const dates=Object.keys(s).sort().reverse();
   const total=dates.reduce((a,k)=>a+s[k],0);
-  const today=s[todayKey()]||0;
+  const totalDone=dates.reduce((a,k)=>a+(completes[k]||0),0);
+  const tk=todayKey();
+  const today=s[tk]||0, todayDone=completes[tk]||0;
 
   const ov=el('div',{id:'adminOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;max-width:520px;width:100%;max-height:86vh;display:flex;flex-direction:column;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
   card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'📊 이용 통계 (관리자)'));
   card.append(el('div',{style:'font-size:15px;color:#555;margin-bottom:14px;'},
-    '오늘 '+todayKey()+' · 시작 '+today+'회   |   전체 '+total+'회 · '+dates.length+'일 기록'));
+    '오늘 '+tk+' · 시작 '+today+'/완주 '+todayDone+'회   |   전체 시작 '+total+' · 완주 '+totalDone+'('+rateOf(totalDone,total)+'%) · '+dates.length+'일'));
 
   const list=el('div',{style:'overflow:auto;border:1px solid #eee;border-radius:12px;'});
   const table=el('table',{style:'width:100%;border-collapse:collapse;font-size:15px;'});
   const head=el('tr',{});
-  head.append(el('th',{style:'text-align:left;padding:9px 12px;background:#f6f6f8;position:sticky;top:0;'},'날짜'));
-  head.append(el('th',{style:'text-align:right;padding:9px 12px;background:#f6f6f8;position:sticky;top:0;'},'시작 횟수(≈이용자)'));
+  const th=(txt,align)=>el('th',{style:'text-align:'+align+';padding:9px 12px;background:#f6f6f8;position:sticky;top:0;'},txt);
+  head.append(th('날짜','left'));
+  head.append(th('시작','right'));
+  head.append(th('완주','right'));
+  head.append(th('완주율','right'));
   table.append(head);
   if(dates.length===0){
-    const tr=el('tr',{}); tr.append(el('td',{colspan:'2',style:'padding:18px;text-align:center;color:#999;'},'아직 기록이 없어요'));
+    const tr=el('tr',{}); tr.append(el('td',{colspan:'4',style:'padding:18px;text-align:center;color:#999;'},'아직 기록이 없어요'));
     table.append(tr);
   } else dates.forEach(k=>{
+    const d=completes[k]||0;
     const tr=el('tr',{});
     tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;'},k));
     tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;font-weight:600;'},String(s[k])));
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;'},String(d)));
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;color:#666;'},rateOf(d,s[k])+'%'));
     table.append(tr);
   });
   list.append(table); card.append(list);
@@ -756,7 +803,7 @@ function openAdmin(){
   const btns=el('div',{style:'display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;'});
   const mkBtn=(label,bg,fn)=>{const b=el('button',{style:'flex:1;min-width:120px;padding:12px;border:0;border-radius:12px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;background:'+bg+';'},label);b.onclick=fn;return b;};
   btns.append(mkBtn('CSV 복사','#3b82f6',()=>{
-    const csv='date,starts\n'+dates.map(k=>k+','+s[k]).join('\n');
+    const csv='date,starts,completes,completion_rate\n'+dates.map(k=>{const d=completes[k]||0;return k+','+s[k]+','+d+','+rateOf(d,s[k])+'%';}).join('\n');
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(csv).then(()=>alert('복사되었어요! 스프레드시트에 붙여넣기 하세요.'),()=>prompt('아래를 복사하세요',csv));
     } else prompt('아래를 복사하세요',csv);
