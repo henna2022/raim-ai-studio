@@ -148,6 +148,7 @@ function renderHome(){
 
 /* ---------- 레슨 ---------- */
 function openLesson(c){
+  bumpStage(c,'o');   // 단계 열람 기록
   const l=LESSONS.find(x=>x.c===c);
   document.getElementById('attoG').src=RAIMI_IMG;
   setText('backBtn', t('🏠 처음으로','🏠 Home'));
@@ -164,6 +165,7 @@ function showNote(html,label,fn){
   r.classList.add('show');
 }
 function finish(c, html){
+  bumpStage(c,'d');   // 단계 완료 기록
   const before=done.size;
   done.add(c);
   const all=done.size>=5;
@@ -533,6 +535,8 @@ applyLang();
 const STAT_KEY='raimi_start_stats';     // {날짜: 시작 횟수}
 const DONE_KEY='raimi_complete_stats';  // {날짜: 완주 횟수}
 const HOUR_KEY='raimi_hour_stats';      // {'00'~'23': 시작 횟수} (전체 누적)
+const STAGE_KEY='raimi_stage_stats';    // {'1'~'5': {o:열람, d:완료}} (전체 누적)
+const LANG_KEY='raimi_lang_stats';      // {ko:세션수, en:세션수} (시작 시점 언어)
 function todayKey(){const d=new Date();const p=n=>String(n).padStart(2,'0');
   return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 function statGet(k){try{return JSON.parse(localStorage.getItem(k))||{};}catch(e){return {};}}
@@ -543,8 +547,10 @@ function bumpStart(){
   const s=loadStats(),k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);
   const h=statGet(HOUR_KEY),hk=String(new Date().getHours()).padStart(2,'0');
   h[hk]=(h[hk]||0)+1;statSet(HOUR_KEY,h);
+  const lm=statGet(LANG_KEY);lm[LANG]=(lm[LANG]||0)+1;statSet(LANG_KEY,lm);
 }
 function bumpComplete(){const c=statGet(DONE_KEY),k=todayKey();c[k]=(c[k]||0)+1;statSet(DONE_KEY,c);}
+function bumpStage(c,field){const m=statGet(STAGE_KEY),k=String(c);if(!m[k])m[k]={o:0,d:0};m[k][field]=(m[k][field]||0)+1;statSet(STAGE_KEY,m);}
 
 /* ---------- 엑셀(.xlsx) 만들기: 외부 라이브러리 없이 store 방식 ZIP으로 생성 ---------- */
 const CRC_TABLE=(function(){const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
@@ -661,6 +667,18 @@ function aggHourly(hours){
 }
 /* 시작 대비 완주 비율(%) */
 function rateOf(done,start){return start?round1(done/start*100):0;}
+function stageLabel(c){const l=LESSONS.find(x=>x.c===c);return l?(c+'. '+l.name.ko+'('+l.tag.ko+')'):('단계 '+c);}
+function aggStage(){
+  const m=statGet(STAGE_KEY);
+  return [1,2,3,4,5].map(c=>{const o=(m[c]&&m[c].o)||0,d=(m[c]&&m[c].d)||0;
+    return {c:c,label:stageLabel(c),open:o,done:d,rate:rateOf(d,o)};});
+}
+function aggLang(){
+  const m=statGet(LANG_KEY),ko=m.ko||0,en=m.en||0,total=ko+en;
+  return {ko:ko,en:en,total:total,rows:[
+    {label:'한국어',n:ko,share:total?round1(ko/total*100):0},
+    {label:'English',n:en,share:total?round1(en/total*100):0}]};
+}
 function buildReportRows(s,completes,hours,today){
   const dates=Object.keys(s).sort();
   const total=dates.reduce((a,k)=>a+s[k],0);
@@ -710,6 +728,14 @@ function buildReportRows(s,completes,hours,today){
   KV('가장 활발한 요일',busiest.wd+'요일 (총 '+busiest.sum+'회)');
   KV('가장 한산한 요일',quiet.wd+'요일 (총 '+quiet.sum+'회)');
   KV('가장 붐비는 시간대',hr.total?hpeak.hour+' (총 '+hpeak.sum+'회)':'기록 없음');
+  rows.push([]);
+  rows.push([{v:'단계 · 언어 분석',s:1},{v:'',s:1}]);
+  const st=aggStage(),stSorted=st.slice().sort((a,b)=>b.open-a.open);
+  const topStage=stSorted[0],lowStage=st.slice().filter(x=>x.open>0).sort((a,b)=>a.rate-b.rate)[0];
+  KV('가장 많이 한 단계',topStage.open?topStage.label+' (열람 '+topStage.open+'회)':'기록 없음');
+  if(lowStage)KV('완료율 가장 낮은 단계',lowStage.label+' ('+lowStage.rate+'%)');
+  const lang=aggLang();
+  KV('언어 사용',lang.total?'한국어 '+lang.ko+'('+lang.rows[0].share+'%) · English '+lang.en+'('+lang.rows[1].share+'%)':'기록 없음');
   return rows;
 }
 /* 여러 시트로 구성된 분석 리포트 워크북 생성 */
@@ -749,7 +775,18 @@ function buildStatsXlsx(s){
   hr.rows.forEach(h=>hourRows.push([h.hour,h.sum,h.share+'%']));
   hourRows.push([{v:'합계',s:3},{v:hr.total,s:3},{v:'',s:3}]);
   const hourly={name:'시간대별',colWidths:[10,12,10],rows:hourRows};
-  return buildWorkbook([report,daily,weekly,monthly,weekday,hourly]);
+  /* 7) 단계별 (1~5단계 열람·완료·완료율) */
+  const st=aggStage();
+  const stageRows=[[H('단계'),H('시작(열람)'),H('완료'),H('완료율')]];
+  st.forEach(x=>stageRows.push([x.label,x.open,x.done,rateOf(x.done,x.open)+'%']));
+  const stage={name:'단계별',colWidths:[28,12,10,10],rows:stageRows};
+  /* 8) 언어별 (시작 세션 언어) */
+  const lg=aggLang();
+  const langRows=[[H('언어'),H('시작 세션'),H('비율')]];
+  lg.rows.forEach(x=>langRows.push([x.label,x.n,x.share+'%']));
+  langRows.push([{v:'합계',s:3},{v:lg.total,s:3},{v:'',s:3}]);
+  const language={name:'언어별',colWidths:[12,12,10],rows:langRows};
+  return buildWorkbook([report,daily,weekly,monthly,weekday,hourly,stage,language]);
 }
 function downloadBytes(bytes,filename){
   const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -774,8 +811,11 @@ function openAdmin(){
   const ov=el('div',{id:'adminOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;max-width:520px;width:100%;max-height:86vh;display:flex;flex-direction:column;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
   card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'📊 이용 통계 (관리자)'));
-  card.append(el('div',{style:'font-size:15px;color:#555;margin-bottom:14px;'},
+  card.append(el('div',{style:'font-size:15px;color:#555;margin-bottom:4px;'},
     '오늘 '+tk+' · 시작 '+today+'/완주 '+todayDone+'회   |   전체 시작 '+total+' · 완주 '+totalDone+'('+rateOf(totalDone,total)+'%) · '+dates.length+'일'));
+  const topSt=aggStage().slice().sort((a,b)=>b.open-a.open)[0], lg=aggLang();
+  card.append(el('div',{style:'font-size:13px;color:#888;margin-bottom:14px;'},
+    '인기 단계: '+(topSt.open?topSt.label+' ('+topSt.open+'회)':'—')+'   ·   언어: 한 '+lg.ko+' / En '+lg.en));
 
   const list=el('div',{style:'overflow:auto;border:1px solid #eee;border-radius:12px;'});
   const table=el('table',{style:'width:100%;border-collapse:collapse;font-size:15px;'});
