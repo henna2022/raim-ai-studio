@@ -384,7 +384,7 @@ function multiHeadRound(sentence, colorWord, speedWord){
   return (box,onDone)=>{
     box.appendChild(el('div',{style:'font-size:22px'},
       t('🕵️ 탐정 두 명이 같은 문장에서 서로 다른 걸 찾아요!','🕵️ Two detectives find different things in the same sentence!')));
-    const q=el('div',{style:'font-size:24px'}, t('🖌️ 색깔 탐정: 무슨 색일까요? 단어를 눌러 주세요!','🖌️ Color detective: what color? Tap a word!'));
+    const q=el('div',{style:'font-size:24px'}, t('🖌️ 색깔 탐정: 무슨 색일까요? 단어를 눌러 주세요!','🖌️ Color detective: What color is it? Tap the word!'));
     box.appendChild(q);
     const sent=el('div',{class:'sentence'}); const hint=el('div',{class:'hint'},''); let phase=0;
     sentence.split(' ').forEach(w=>{
@@ -393,7 +393,7 @@ function multiHeadRound(sentence, colorWord, speedWord){
       const role = bare===colorWord?'color' : (bare===speedWord?'speed':'x');
       sp.onclick=()=>{const want=phase===0?'color':'speed';
         if(role===want){sp.classList.add('lit');hint.textContent='';
-          if(phase===0){phase=1;q.textContent=t('💨 속도가 어떤가요? 단어를 눌러 주세요!','💨 How fast is it? Tap a word!');}
+          if(phase===0){phase=1;q.textContent=t('💨 속도가 어떤가요? 단어를 눌러 주세요!','💨 What is its speed like? Tap the word!');}
           else setTimeout(onDone,1100);}
         else if(role!=='x'){hint.textContent=t('그건 다른 탐정이 찾을 거예요~',"That's for the other detective~");
           sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
@@ -421,13 +421,13 @@ function gameAttention(stage,c){
     ];
   } else {
     rounds=[
-      {fn:attnRound('🔦 Who was hungry? Tap a word.',
+      {fn:attnRound('🔦 Who was hungry? Tap the word.',
         [{t:'The',role:'x'},{t:'lion',role:'ans'},{t:'chased',role:'x'},{t:'the',role:'x'},{t:'rabbit',role:'no'},{t:'because',role:'x'},{t:'it',role:'x'},{t:'was',role:'x'},{t:'hungry.',role:'x'}]),
        note:"🔦 The 'lion' that was chasing was hungry! When AI meets a confusing word, it shines a flashlight to decide which word to look at. That's attention."},
-      {fn:attnRound('🔦 What was sweet? Tap a word.',
+      {fn:attnRound('🔦 What was sweet? Tap the word.',
         [{t:'Minji',role:'no'},{t:'ate',role:'x'},{t:'an',role:'x'},{t:'apple.',role:'ans'},{t:'It',role:'x'},{t:'was',role:'x'},{t:'very',role:'x'},{t:'sweet.',role:'x'}]),
        note:"🔦 The sweet thing was the 'apple'! AI focuses to find which word 'sweet' belongs with — that's attention."},
-      {fn:attnRound('🔦 Inside what? Tap a word.',
+      {fn:attnRound('🔦 What was the book inside? Tap the word.',
         [{t:'Jiho',role:'no'},{t:'opened',role:'x'},{t:'the',role:'x'},{t:'bag.',role:'ans'},{t:'A',role:'x'},{t:'book',role:'no'},{t:'was',role:'x'},{t:'inside',role:'x'},{t:'it.',role:'x'}]),
        note:"🔦 The book was inside the 'bag'. AI looks back at earlier words to find what 'it' points to — thanks to attention."},
       {fn:multiHeadRound('The red car runs fast.','red','fast'), note:''}
@@ -487,7 +487,7 @@ function gamePredict(stage,c){
        note:'🔮 Even in a long sentence, AI picks the word that fits best!'},
       {fn:predictRound('🌊 The kids built a nice',
         [{w:'sandcastle',p:70,ok:true},{w:'noodle',p:10},{w:'umbrella',p:20}], 'on the beach.'),
-       note:'🔮 Even in a tricky sentence, AI guesses the blank!'},
+       note:'🔮 Even in a tricky sentence, AI fills in the blank!'},
       {fn:predictRound('🚀 The astronaut saw a bright',
         [{w:'star',p:72,ok:true},{w:'sock',p:8},{w:'banana',p:20}], 'in the sky.'), note:''}
     ];
