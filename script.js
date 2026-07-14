@@ -404,7 +404,8 @@ function multiHeadRound(sentence, colorWord, speedWord){
     const sent=el('div',{class:'sentence'}); const hint=el('div',{class:'hint'},''); let phase=0;
     sentence.split(' ').forEach(w=>{
       const sp=el('span',{class:'word'},w+' ');
-      const role = w===colorWord?'color' : (w===speedWord?'speed':'x');
+      const bare = w.replace(/[.,!?、。！？]+$/,'');   // 끝 구두점 제거 후 비교(영어 'fast.' 대응)
+      const role = bare===colorWord?'color' : (bare===speedWord?'speed':'x');
       sp.onclick=()=>{const want=phase===0?'color':'speed';
         if(role===want){sp.classList.add('lit');hint.textContent='';speak(t('맞아요!','Yes!'));
           if(phase===0){phase=1;q.textContent=t('💨 속도가 어떤가요? 단어를 눌러 주세요!','💨 How fast is it? Tap a word!');}
@@ -742,15 +743,15 @@ function buildReportRows(s,completes,hours,today){
 function buildStatsXlsx(s){
   const today=todayKey();
   const completes=statGet(DONE_KEY),hours=statGet(HOUR_KEY);
-  const dates=Object.keys(s).sort();
-  const total=dates.reduce((a,k)=>a+s[k],0);
+  const dates=Array.from(new Set([...Object.keys(s),...Object.keys(completes)])).sort();  // 시작·완주 날짜 합집합(자정 넘김 완주도 포함)
+  const total=dates.reduce((a,k)=>a+(s[k]||0),0);
   const totalDone=dates.reduce((a,k)=>a+(completes[k]||0),0);
   const H=t=>({v:t,s:1});
   /* 1) 요약 리포트 */
   const report={name:'요약 리포트',colWidths:[26,24],rows:buildReportRows(s,completes,hours,today)};
   /* 2) 날짜별 (시작·완주·완주율 + 누적) */
   const dailyRows=[[H('날짜'),H('시작 횟수'),H('완주'),H('완주율'),H('누적 시작')]];
-  let cum=0;dates.forEach(k=>{cum+=s[k];const d=completes[k]||0;dailyRows.push([k,s[k],d,rateOf(d,s[k])+'%',cum]);});
+  let cum=0;dates.forEach(k=>{const st=s[k]||0;cum+=st;const d=completes[k]||0;dailyRows.push([k,st,d,rateOf(d,st)+'%',cum]);});
   dailyRows.push([{v:'합계',s:3},{v:total,s:3},{v:totalDone,s:3},{v:rateOf(totalDone,total)+'%',s:3},{v:'',s:3}]);
   const daily={name:'날짜별',colWidths:[14,12,10,10,12],rows:dailyRows};
   /* 3) 주차별 (월요일 시작) */
@@ -802,8 +803,8 @@ function openAdmin(){
   if(adminOpen)return; adminOpen=true;
   const s=loadStats();
   const completes=statGet(DONE_KEY);
-  const dates=Object.keys(s).sort().reverse();
-  const total=dates.reduce((a,k)=>a+s[k],0);
+  const dates=Array.from(new Set([...Object.keys(s),...Object.keys(completes)])).sort().reverse();
+  const total=dates.reduce((a,k)=>a+(s[k]||0),0);
   const totalDone=dates.reduce((a,k)=>a+(completes[k]||0),0);
   const tk=todayKey();
   const today=s[tk]||0, todayDone=completes[tk]||0;
@@ -833,9 +834,9 @@ function openAdmin(){
     const d=completes[k]||0;
     const tr=el('tr',{});
     tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;'},k));
-    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;font-weight:600;'},String(s[k])));
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;font-weight:600;'},String(s[k]||0)));
     tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;'},String(d)));
-    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;color:#666;'},rateOf(d,s[k])+'%'));
+    tr.append(el('td',{style:'padding:8px 12px;border-top:1px solid #f0f0f0;text-align:right;color:#666;'},rateOf(d,s[k]||0)+'%'));
     table.append(tr);
   });
   list.append(table); card.append(list);
@@ -843,7 +844,7 @@ function openAdmin(){
   const btns=el('div',{style:'display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;'});
   const mkBtn=(label,bg,fn)=>{const b=el('button',{style:'flex:1;min-width:120px;padding:12px;border:0;border-radius:12px;font-size:16px;font-weight:600;color:#fff;cursor:pointer;background:'+bg+';'},label);b.onclick=fn;return b;};
   btns.append(mkBtn('CSV 복사','#3b82f6',()=>{
-    const csv='date,starts,completes,completion_rate\n'+dates.map(k=>{const d=completes[k]||0;return k+','+s[k]+','+d+','+rateOf(d,s[k])+'%';}).join('\n');
+    const csv='date,starts,completes,completion_rate\n'+dates.map(k=>{const d=completes[k]||0;return k+','+(s[k]||0)+','+d+','+rateOf(d,s[k]||0)+'%';}).join('\n');
     if(navigator.clipboard&&navigator.clipboard.writeText){
       navigator.clipboard.writeText(csv).then(()=>alert('복사되었어요! 스프레드시트에 붙여넣기 하세요.'),()=>prompt('아래를 복사하세요',csv));
     } else prompt('아래를 복사하세요',csv);
@@ -855,7 +856,10 @@ function openAdmin(){
     }catch(e){alert('엑셀 파일을 만들지 못했어요: '+(e&&e.message||e));}
   }));
   btns.append(mkBtn('기록 지우기','#ef4444',()=>{
-    if(confirm('모든 통계 기록을 삭제할까요? 되돌릴 수 없어요.')){saveStats({});closeAdmin();}
+    if(confirm('모든 통계 기록을 삭제할까요? 되돌릴 수 없어요.')){
+      [STAT_KEY,DONE_KEY,HOUR_KEY,STAGE_KEY,LANG_KEY].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+      closeAdmin();
+    }
   }));
   btns.append(mkBtn('닫기','#6b7280',closeAdmin));
   card.append(btns);
