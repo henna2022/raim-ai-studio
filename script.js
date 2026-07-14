@@ -781,6 +781,23 @@ function downloadBytes(bytes,filename){
   setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},1500);
 }
 
+/* 앱 버전: 서비스 워커 캐시 이름(sw.js의 'raim-ai-vN')에서 실제 배포 버전을 읽어 표시.
+   배포 시 sw.js의 CACHE만 올리면 관리자 화면 버전도 자동으로 따라감.
+   SW 미등록(개발/파일 직접 열기 등) 시엔 아래 기본값을 사용. */
+const APP_VERSION_FALLBACK='v7';
+function getAppVersion(){
+  return new Promise(resolve=>{
+    try{
+      if(!('caches' in window)){resolve(APP_VERSION_FALLBACK);return;}
+      caches.keys().then(keys=>{
+        const vers=keys.map(k=>{const m=/raim-ai-v(\d+)/.exec(k);return m?parseInt(m[1],10):null;})
+          .filter(n=>n!=null).sort((a,b)=>a-b);
+        resolve(vers.length?('v'+vers[vers.length-1]):APP_VERSION_FALLBACK);
+      }).catch(()=>resolve(APP_VERSION_FALLBACK));
+    }catch(e){resolve(APP_VERSION_FALLBACK);}
+  });
+}
+
 /* 관리자 통계 화면 (숨김): 좌측 상단 로고를 2.5초 안에 5번 탭하면 열림 */
 let adminOpen=false;
 function openAdmin(){
@@ -796,6 +813,9 @@ function openAdmin(){
   const ov=el('div',{id:'adminOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;max-width:520px;width:100%;max-height:86vh;display:flex;flex-direction:column;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
   card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'📊 이용 통계 (관리자)'));
+  const verLine=el('div',{style:'font-size:12px;color:#aaa;margin-bottom:8px;'},'버전 …');
+  card.append(verLine);
+  getAppVersion().then(v=>{verLine.textContent='버전 '+v;});
   card.append(el('div',{style:'font-size:15px;color:#555;margin-bottom:4px;'},
     '오늘 '+tk+' · 시작 '+today+'/완주 '+todayDone+'회   |   전체 시작 '+total+' · 완주 '+totalDone+'('+rateOf(totalDone,total)+'%) · '+dates.length+'일'));
   const topSt=aggStage().slice().sort((a,b)=>b.open-a.open)[0], lg=aggLang();
