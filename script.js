@@ -76,20 +76,6 @@ const LESSONS = [
          en:"AI makes sentences by guessing the next word. What goes in the blank?"}},
 ];
 
-let VOICES=[];
-function loadVoices(){try{VOICES=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){VOICES=[];}}
-if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
-function pickVoice(lang){const base=lang.split('-')[0];
-  return VOICES.find(v=>v.lang&&v.lang.replace('_','-').toLowerCase()===lang.toLowerCase())
-      || VOICES.find(v=>v.lang&&v.lang.toLowerCase().startsWith(base))
-      || null;}
-function speak(s){try{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
-  if(!VOICES.length)loadVoices();
-  const lang=LANG==='ko'?'ko-KR':'en-US';
-  const u=new SpeechSynthesisUtterance(s);u.lang=lang;
-  const v=pickVoice(lang);if(v)u.voice=v;
-  u.rate=0.95;u.pitch=1.1;speechSynthesis.speak(u);}catch(e){}}
-
 function el(tag,attrs,txt){const n=document.createElement(tag);
   if(attrs)for(const k in attrs){if(k==='class')n.className=attrs[k];else n.setAttribute(k,attrs[k]);}
   if(txt!=null)n.textContent=txt;return n;}
@@ -100,9 +86,9 @@ function setHTML(id,s){const e=document.getElementById(id);if(e)e.innerHTML=s;}
 /* ---------- 화면 ---------- */
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');}
-function goHome(){if(window.speechSynthesis)speechSynthesis.cancel();
+function goHome(){
   if(done.size>=5){showComplete();return;} renderHome();show('home');}
-function resetAll(){if(window.speechSynthesis)speechSynthesis.cancel();done.clear();applyLang();show('start');}
+function resetAll(){done.clear();applyLang();show('start');}
 function showComplete(){renderStamps('doneStamps');show('complete');fire();}
 
 /* ---------- 언어 적용 ---------- */
@@ -124,7 +110,7 @@ function applyLang(){
   setText('resetHome',rl); setText('resetGame',rl); setText('resetDone',rl);
   setText('backBtn', t('🏠 처음으로','🏠 Home'));
 }
-function toggleLang(){if(window.speechSynthesis)speechSynthesis.cancel();LANG=LANG==='ko'?'en':'ko';applyLang();
+function toggleLang(){LANG=LANG==='ko'?'en':'ko';applyLang();
   if(document.getElementById('home').classList.contains('active'))renderHome();}
 
 /* ---------- 메뉴 / 도장 ---------- */
@@ -153,9 +139,8 @@ function openLesson(c){
   document.getElementById('attoG').src=RAIMI_IMG;
   setText('backBtn', t('🏠 처음으로','🏠 Home'));
   setHTML('hook', l.hook[LANG].replace(/([.!?。！？])\s+/g,'$1<br>'));
-  const sb=document.getElementById('speakBtn'); sb.title=t('읽어주기','Read aloud'); sb.onclick=()=>speak(l.hook[LANG]);
   hideReveal(); document.getElementById('stage').innerHTML='';
-  show('game'); speak(l.hook[LANG]);
+  show('game');
   ({1:gameTokenize,2:gameEmbed,3:gamePosition,4:gameAttention,5:gamePredict})[c](document.getElementById('stage'),c);
 }
 function hideReveal(){const r=document.getElementById('reveal');r.classList.remove('show');r.innerHTML='';}
@@ -233,7 +218,7 @@ function tokenRound(words){
     const resetBtn=el('button',{class:'btn home',style:'font-size:19px;padding:9px 20px;margin-top:10px;'},
       t('✂️ 다시 잘라보기','✂️ Cut again'));
     resetBtn.onclick=()=>{if(solved)return;cuts.clear();solved=false;layer.style.pointerEvents='';
-      status.textContent='';render();speak(t('다시 잘라봐요!','Let\'s cut again!'));};
+      status.textContent='';render();};
     box.append(resetBtn);
     function gapCenters(){const cs=[];for(let i=0;i<tiles.length-1;i++){
       const a=tiles[i].getBoundingClientRect(),b=tiles[i+1].getBoundingClientRect();cs.push({i,x:(a.right+b.left)/2});}return cs;}
@@ -245,7 +230,7 @@ function tokenRound(words){
       if(Math.abs(e.clientY-y0)<14)return;
       const cx=(x0+e.clientX)/2,cs=gapCenters();if(!cs.length)return;
       let best=cs[0];for(const g of cs)if(Math.abs(g.x-cx)<Math.abs(best.x-cx))best=g;
-      if(cuts.has(best.i))cuts.delete(best.i);else{cuts.add(best.i);speak(t('싹둑','snip'));}
+      if(cuts.has(best.i))cuts.delete(best.i);else{cuts.add(best.i);}
       render();});
   };
 }
@@ -280,7 +265,7 @@ function embedRound(villages, items){
       const chip=el('div',{class:'chip drag'},it.w); chip._type=it.type; let drag=false,ox,oy;
       chip.addEventListener('pointerdown',e=>{drag=true;try{chip.setPointerCapture(e.pointerId);}catch(_){}
         const r=chip.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;chip.style.width=r.width+'px';
-        chip.classList.add('lift');chip.style.position='fixed';chip.style.left=r.left+'px';chip.style.top=r.top+'px';chip.style.zIndex=999;speak(it.w);});
+        chip.classList.add('lift');chip.style.position='fixed';chip.style.left=r.left+'px';chip.style.top=r.top+'px';chip.style.zIndex=999;});
       chip.addEventListener('pointermove',e=>{if(!drag)return;chip.style.left=(e.clientX-ox)+'px';chip.style.top=(e.clientY-oy)+'px';
         const v=over(e.clientX,e.clientY);vEls.forEach(x=>x.classList.toggle('hot',x===v));});
       chip.addEventListener('pointerup',e=>{if(!drag)return;drag=false;vEls.forEach(x=>x.classList.remove('hot'));
@@ -288,7 +273,7 @@ function embedRound(villages, items){
         chip.classList.remove('lift');chip.style.position='';chip.style.left='';chip.style.top='';chip.style.zIndex='';chip.style.width='';
         if(v&&v._type===chip._type){v._pen.appendChild(chip);chip.classList.add('pulse');chip.style.pointerEvents='none';chip.classList.remove('drag');
           placed++; if(placed===items.length)setTimeout(onDone,500);}
-        else if(v){v.classList.add('shake');speak(t('음~ 다시!','Hmm, try again!'));setTimeout(()=>v.classList.remove('shake'),400);}});
+        else if(v){v.classList.add('shake');setTimeout(()=>v.classList.remove('shake'),400);}});
       return chip;
     }
     shuffle(items).forEach(it=>pen.appendChild(makeChip(it)));
@@ -333,9 +318,9 @@ function orderRound(target, guide){
       chip.onclick=()=>{
         if(chip.classList.contains('used'))return;
         if(w===target[step]){chip.classList.add('used');chip.style.opacity='.25';chip.style.pointerEvents='none';
-          blanks[step].textContent=w;blanks[step].style.borderStyle='solid';blanks[step].classList.add('pulse');step++;speak(w);
-          if(step===target.length){speak(t('말이 되네요!','Now it makes sense!'));setTimeout(onDone,800);}}
-        else{chip.classList.add('shake');speak(t('순서가 달라요! 다시 봐요.','Different order! Look again.'));setTimeout(()=>chip.classList.remove('shake'),400);}
+          blanks[step].textContent=w;blanks[step].style.borderStyle='solid';blanks[step].classList.add('pulse');step++;
+          if(step===target.length){setTimeout(onDone,800);}}
+        else{chip.classList.add('shake');setTimeout(()=>chip.classList.remove('shake'),400);}
       };
       pool.appendChild(chip);
     });
@@ -386,9 +371,9 @@ function attnRound(q, tokens){
       const sp=el('span',{class:'word'},tk.t+' ');
       if(tk.role!=='x'){sp.onclick=()=>{
         if(tk.role==='ans'){sent.classList.add('dim');sp.classList.add('lit');sp.classList.remove('dim');
-          hint.textContent=''; speak(t('정답이에요!','Correct!')); setTimeout(onDone,1100);}
+          hint.textContent=''; setTimeout(onDone,1100);}
         else{hint.textContent=t('🤔 다시 한 번 생각해보세요!','🤔 Think again!');
-          sp.classList.add('shake'); speak(t('다시 한 번 생각해보세요!','Think again!')); setTimeout(()=>sp.classList.remove('shake'),400);}
+          sp.classList.add('shake'); setTimeout(()=>sp.classList.remove('shake'),400);}
       };}
       sent.appendChild(sp);
     });
@@ -407,7 +392,7 @@ function multiHeadRound(sentence, colorWord, speedWord){
       const bare = w.replace(/[.,!?、。！？]+$/,'');   // 끝 구두점 제거 후 비교(영어 'fast.' 대응)
       const role = bare===colorWord?'color' : (bare===speedWord?'speed':'x');
       sp.onclick=()=>{const want=phase===0?'color':'speed';
-        if(role===want){sp.classList.add('lit');hint.textContent='';speak(t('맞아요!','Yes!'));
+        if(role===want){sp.classList.add('lit');hint.textContent='';
           if(phase===0){phase=1;q.textContent=t('💨 속도가 어떤가요? 단어를 눌러 주세요!','💨 How fast is it? Tap a word!');}
           else setTimeout(onDone,1100);}
         else if(role!=='x'){hint.textContent=t('그건 다른 탐정이 찾을 거예요~',"That's for the other detective~");
@@ -467,7 +452,6 @@ function predictRound(prefix, options, suffix){
       const btn=el('div',{class:'chip'},o.w);
       btn.onclick=()=>{row.querySelectorAll('.chip').forEach(x=>x.style.pointerEvents='none');bars.classList.remove('hidden');
         requestAnimationFrame(()=>{[...bars.querySelectorAll('.fill')].forEach((f,i)=>f.style.width=options[i].p+'%');});
-        speak(o.ok? t('정답이에요! 잘했어요!','Correct! Great job!') : t('AI는 생각이 조금 다른 것 같아요. 막대를 볼까요?','Hmm, AI was thinking of something different. Look at the bars.'));
         setTimeout(()=>onDone(!!o.ok),1500);
       };
       row.appendChild(btn);

@@ -39,9 +39,6 @@
   .saybar .bubble{flex:1;}
   .saybar .bubble:before{content:"";position:absolute;left:-16px;top:30px;border:12px solid transparent;border-right-color:var(--ink);}
   .saybar .bubble:after{content:"";position:absolute;left:-11px;top:31px;border:11px solid transparent;border-right-color:#fff;}
-  .speak{flex:none;font-size:26px;background:var(--c4);border:3px solid var(--ink);border-radius:50%;
-    width:54px;height:54px;cursor:pointer;box-shadow:var(--shadow);}
-  .speak:active{transform:translateY(3px);}
 
   .home-hero{text-align:center;margin:2px 0;}
   .home-hero h1{font-size:50px;margin:6px 0;letter-spacing:1px;}
