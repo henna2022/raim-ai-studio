@@ -310,7 +310,7 @@ function orderRound(target, guide){
     box.appendChild(el('div',{style:'font-size:21px;opacity:.78'},
       t('🤖 순서를 모르면 AI는 이렇게 봐요: ','🤖 Without order, AI sees: ')+'"'+jumble.join(' ')+'"'));
     const slots=el('div',{class:'row'});
-    const blanks=target.map(()=>{const b=el('div',{class:'chip'},'＿');b.style.minWidth='130px';b.style.borderStyle='dashed';slots.appendChild(b);return b;});
+    const blanks=target.map(()=>{const b=el('div',{class:'chip blank'},'＿');b.style.minWidth='130px';slots.appendChild(b);return b;});
     box.append(slots, el('div',{style:'font-size:20px;opacity:.78'},guide));
     const pool=el('div',{class:'row'}); let step=0;
     jumble.forEach(w=>{
@@ -318,7 +318,7 @@ function orderRound(target, guide){
       chip.onclick=()=>{
         if(chip.classList.contains('used'))return;
         if(w===target[step]){chip.classList.add('used');chip.style.opacity='.25';chip.style.pointerEvents='none';
-          blanks[step].textContent=w;blanks[step].style.borderStyle='solid';blanks[step].classList.add('pulse');step++;
+          blanks[step].textContent=w;blanks[step].classList.add('filled','pulse');step++;
           if(step===target.length){setTimeout(onDone,800);}}
         else{chip.classList.add('shake');setTimeout(()=>chip.classList.remove('shake'),400);}
       };

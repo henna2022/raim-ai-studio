@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" translate="no">
 <head>
 <meta charset="UTF-8">
+<!-- 키오스크: 브라우저 자동 번역 차단(앱 자체 한/영 전환 사용) -->
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Raimi's AI Language Lab</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -12,13 +14,12 @@
 <meta name="apple-mobile-web-app-title" content="AI 언어 연구소">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jua&family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+<!-- 폰트는 페이퍼로지 자체 호스팅(styles.css @font-face) — 외부 CDN 의존 제거(오프라인 대비) -->
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="app">
+  <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
 
   <!-- 시작 -->
   <section id="start" class="screen active">
