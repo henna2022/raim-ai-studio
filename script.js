@@ -53,24 +53,42 @@ const ART5 = `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><g str
   <path d="M38 34 a12 12 0 0 1 9 -7" fill="none" stroke="#fff" stroke-width="4"/>
   <path d="M48 35 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4 z" fill="#c78bff" stroke-width="2"/></g></svg>`;
 
+/* ---------- 공용 UI 아이콘 (버튼용, currentColor 선) ---------- */
+const IC=inner=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const ICONS={
+  home:IC('<path d="M4 11.4 12 4.4l8 7"/><path d="M6.4 10.2v8.4a1.4 1.4 0 0 0 1.4 1.4h8.4a1.4 1.4 0 0 0 1.4-1.4v-8.4"/>'),
+  reset:IC('<polyline points="3.5 4.5 3.5 10.5 9.5 10.5"/><path d="M6 15.3a7.7 7.7 0 1 0 1.8-8L3.5 10.5"/>'),
+  globe:IC('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.5 2.4 3.8 5.3 3.8 8.5s-1.3 6.1-3.8 8.5c-2.5-2.4-3.8-5.3-3.8-8.5s1.3-6.1 3.8-8.5z"/>'),
+  play:'<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.2v13.6L19.2 12z"/></svg>',
+  scissors:IC('<circle cx="6" cy="6.3" r="2.8"/><circle cx="6" cy="17.7" r="2.8"/><path d="M20.2 4.5 8.5 15.9"/><path d="M14.8 14.1l5.4 5.4"/><path d="M8.5 8.1l3.5 3.4"/>')
+};
+/* 마을(카테고리) 아이콘 — 섹션 일러스트와 같은 카툰 스타일 */
+const VIC=inner=>`<svg class="vic" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#3a2f2a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">${inner}</g></svg>`;
+const VILLAGE_ICONS={
+  animal:VIC('<ellipse cx="16" cy="20.5" rx="6.5" ry="5" fill="#e8b06e"/><circle cx="8" cy="13.5" r="3" fill="#e8b06e"/><circle cx="16" cy="11" r="3" fill="#e8b06e"/><circle cx="24" cy="13.5" r="3" fill="#e8b06e"/>'),
+  food:VIC('<path d="M16 11c-4.5-2.5-9 .5-9 6 0 5 3.5 9 6.5 9 1 0 1.7-.5 2.5-.5s1.5.5 2.5.5c3 0 6.5-4 6.5-9 0-5.5-4.5-8.5-9-6z" fill="#ff7d7d"/><path d="M16 11V6.5" fill="none"/><path d="M16 8c1-2.5 3.5-3.5 6-2.5-.7 2.5-3.5 3.5-6 2.5z" fill="#56c596"/>'),
+  sky:VIC('<path d="M4 21v-4l3.5-1.2L10 10.5h12l2.5 5.3L28 17v4z" fill="#6aa8ff"/><path d="M11.5 12.5h9l1.5 3.3h-12z" fill="#dff0ff"/><circle cx="10" cy="22.5" r="3" fill="#3a2f2a" stroke="none"/><circle cx="22" cy="22.5" r="3" fill="#3a2f2a" stroke="none"/>'),
+  nature:VIC('<rect x="14" y="18" width="4" height="8" rx="1.6" fill="#c98b5e"/><circle cx="16" cy="12.5" r="8" fill="#56c596"/><circle cx="13" cy="10.5" r="1.4" fill="#eafff3" stroke="none"/>')
+};
+
 const LESSONS = [
-  {c:1,emoji:"✂️",art:ART1,
+  {c:1,art:ART1,
    name:{ko:"단어 쪼개기",en:"Split the Words"}, tag:{ko:"토큰화",en:"Tokenization"},
    hook:{ko:"AI는 긴 문장을 한 번에 못 읽어요. 글자 사이를 손가락으로 그어서 단어로 나눠 볼까요?",
          en:"AI can't read a long sentence all at once. Slide your finger between the letters to split it into words!"}},
-  {c:2,emoji:"🗺️",art:ART2,
+  {c:2,art:ART2,
    name:{ko:"단어 지도",en:"Word Map"}, tag:{ko:"임베딩",en:"Embedding"},
    hook:{ko:"비슷한 단어끼리는 가까운 마을에 살아요. 단어를 알맞은 마을로 보내 줄까요?",
          en:"Similar words live in nearby towns. Can you drag each word to the right town?"}},
-  {c:3,emoji:"🔀",art:ART3,
+  {c:3,art:ART3,
    name:{ko:"순서의 중요성",en:"Order Matters"}, tag:{ko:"위치",en:"Position"},
    hook:{ko:"순서를 모르면 AI는 단어를 뒤죽박죽으로 봐요! 순서대로 클릭해 문장을 완성시켜볼까요?",
          en:"Without order, AI sees words all jumbled up! Tap them in order to complete the sentence!"}},
-  {c:4,emoji:"🔦",art:ART4,
+  {c:4,art:ART4,
    name:{ko:"스포트라이트 탐정",en:"Spotlight Detective"}, tag:{ko:"어텐션",en:"Attention"},
    hook:{ko:"이게 제일 중요한 비밀이에요! 헷갈릴 땐 어떤 단어를 봐야 할까요? 정답 단어를 눌러 주세요.",
          en:"This is the most important secret! When things are confusing, which word should we look at? Tap the right word."}},
-  {c:5,emoji:"🔮",art:ART5,
+  {c:5,art:ART5,
    name:{ko:"다음 단어 맞히기",en:"Guess the Next Word"}, tag:{ko:"예측",en:"Prediction"},
    hook:{ko:"AI는 다음에 올 단어를 맞혀서 말을 만들어요. 빈칸에 어떤 말이 올까요?",
          en:"AI makes sentences by guessing the next word. What goes in the blank?"}},
@@ -95,20 +113,20 @@ function showComplete(){renderStamps('doneStamps');show('complete');fire();}
 function applyLang(){
   document.title=t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab");
   setText('startTitle', t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab"));
-  setHTML('startSub', t('🤖 안녕하세요, 저는 라이미예요!<br>5개의 도장을 모으면서<br>AI가 우리 말을 어떻게 알아듣는지<br>함께 알아볼까요?',
-    "🤖 Hi, I'm Raimi!<br>Collect all 5 stamps<br>and discover how AI<br>understands our words!"));
-  setText('startBtn', t('▶ 시작하기','▶ Start'));
+  setHTML('startSub', t('안녕하세요, 저는 라이미예요!<br>5개의 도장을 모으면서<br>AI가 우리 말을 어떻게 알아듣는지<br>함께 알아볼까요?',
+    "Hi, I'm Raimi!<br>Collect all 5 stamps<br>and discover how AI<br>understands our words!"));
+  setHTML('startBtn', ICONS.play+t('시작하기','Start'));
   setHTML('homeTitle', t('라이미의 <b>AI 언어 연구소</b>',"Raimi's <b>AI Language Lab</b>"));
-  setText('homeSub', t('🤖 5가지 비밀을 배우고 도장을 모아 봐요!','🤖 Learn 5 secrets and collect all the stamps!'));
-  setText('doneTitle', t('축하해요! 🎉','Congratulations! 🎉'));
-  setHTML('doneSub', t('5개의 도장을 모두 모았어요!<br>이제 여러분도 AI 박사예요.<br>정말 잘했어요! 🏅',
-    "You collected all 5 stamps!<br>You're an AI expert now.<br>Great job! 🏅"));
-  setText('doneBtn', t('↺ 처음부터 다시','↺ Start over'));
-  const ll=LANG==='ko'?'🌐 English':'🌐 한국어';
-  setText('langBtn',ll); setText('langBtn2',ll);
-  const rl=t('↺ 초기화','↺ Reset');
-  setText('resetHome',rl); setText('resetGame',rl); setText('resetDone',rl);
-  setText('backBtn', t('🏠 처음으로','🏠 Home'));
+  setText('homeSub', t('5가지 비밀을 배우고 도장을 모아 봐요!','Learn 5 secrets and collect all the stamps!'));
+  setText('doneTitle', t('축하해요!','Congratulations!'));
+  setHTML('doneSub', t('5개의 도장을 모두 모았어요!<br>이제 여러분도 AI 박사예요.<br>정말 잘했어요!',
+    "You collected all 5 stamps!<br>You're an AI expert now.<br>Great job!"));
+  setHTML('doneBtn', ICONS.reset+t('처음부터 다시','Start over'));
+  const ll=ICONS.globe+(LANG==='ko'?'English':'한국어');
+  setHTML('langBtn',ll); setHTML('langBtn2',ll);
+  const rl=ICONS.reset+t('초기화','Reset');
+  setHTML('resetHome',rl); setHTML('resetGame',rl); setHTML('resetDone',rl);
+  setHTML('backBtn', ICONS.home+t('처음으로','Home'));
 }
 function toggleLang(){LANG=LANG==='ko'?'en':'ko';applyLang();
   if(document.getElementById('home').classList.contains('active'))renderHome();}
@@ -117,7 +135,9 @@ function toggleLang(){LANG=LANG==='ko'?'en':'ko';applyLang();
 function renderStamps(id){
   const wrap=document.getElementById(id||'stamps'); if(!wrap)return; wrap.innerHTML='';
   LESSONS.forEach(l=>{const on=done.has(l.c);
-    wrap.appendChild(el('div',{class:'stamp'+(on?' on':'')}, on?l.emoji:''));});
+    const st=el('div',{class:'stamp'+(on?' on':'')});
+    if(on)st.innerHTML=l.art;
+    wrap.appendChild(st);});
   setText('stampCount', done.size+' / 5');
 }
 function renderHome(){
@@ -137,7 +157,7 @@ function openLesson(c){
   bumpStage(c,'o');   // 단계 열람 기록
   const l=LESSONS.find(x=>x.c===c);
   document.getElementById('attoG').src=RAIMI_IMG;
-  setText('backBtn', t('🏠 처음으로','🏠 Home'));
+  setHTML('backBtn', ICONS.home+t('처음으로','Home'));
   setHTML('hook', l.hook[LANG].replace(/([.!?。！？])\s+/g,'$1<br>'));
   hideReveal(); document.getElementById('stage').innerHTML='';
   show('game');
@@ -146,7 +166,7 @@ function openLesson(c){
 function hideReveal(){const r=document.getElementById('reveal');r.classList.remove('show');r.innerHTML='';}
 function showNote(html,label,fn){
   const r=document.getElementById('reveal'); r.innerHTML=html+'<div class="btnrow"></div>';
-  const b=el('button',{class:'btn go'},label); b.onclick=fn; r.querySelector('.btnrow').appendChild(b);
+  const b=el('button',{class:'btn go'}); b.innerHTML=label; b.onclick=fn; r.querySelector('.btnrow').appendChild(b);
   r.classList.add('show');
 }
 function finish(c, html){
@@ -156,7 +176,8 @@ function finish(c, html){
   const all=done.size>=5;
   if(all && before<5) bumpComplete();   // 5번째 도장을 방금 채운 순간 1회만 기록
   const r=document.getElementById('reveal'); r.innerHTML=html+'<div class="btnrow"></div>';
-  const b=el('button',{class:'btn '+(all?'go':'home')}, all? t('🎉 도장 5개 완성!','🎉 All 5 stamps!') : t('🏠 처음으로','🏠 Home'));
+  const b=el('button',{class:'btn '+(all?'go':'home')});
+  b.innerHTML = all? t('도장 5개 완성!','All 5 stamps!') : ICONS.home+t('처음으로','Home');
   b.onclick = all? showComplete : ()=>{renderHome();show('home');};
   r.querySelector('.btnrow').appendChild(b);
   r.classList.add('show');
@@ -171,13 +192,13 @@ function runRounds(stage, rounds, c, finalReveal){
     rounds[i].fn(area, (ok)=>{
       const last = i>=rounds.length-1;
       if(ok===false){
-        const wrongNote = t('🔮 AI는 생각이 조금 다른 것 같아요. 어떤 막대가 가장 높은지 볼까요?',
-            '🔮 Hmm, AI was thinking of something different. Which bar is the tallest?');
-        showNote(wrongNote, t('다음 ▶','Next ▶'), last ? ()=>finish(c, finalReveal) : ()=>{i++;go();});
+        const wrongNote = t('AI는 생각이 조금 다른 것 같아요. 어떤 막대가 가장 높은지 볼까요?',
+            'Hmm, AI was thinking of something different. Which bar is the tallest?');
+        showNote(wrongNote, t('다음','Next')+ICONS.play, last ? ()=>finish(c, finalReveal) : ()=>{i++;go();});
       } else if(last){
         finish(c, finalReveal);
       } else {
-        showNote(rounds[i].note, t('다음 ▶','Next ▶'), ()=>{i++;go();});
+        showNote(rounds[i].note, t('다음','Next')+ICONS.play, ()=>{i++;go();});
       }
     });
   }
@@ -191,8 +212,8 @@ function tokenRound(words){
     const target=new Set(); let acc=0; for(let i=0;i<lens.length-1;i++){acc+=lens[i];target.add(acc-1);}
     const cuts=new Set(); const wordSet=new Set(words);
     box.appendChild(el('div',{style:'font-size:20px;opacity:.78'},
-      t('✏️ 글자 사이를 손가락으로 쓱~ 그어서 잘라 볼까요? 진짜 단어가 되면 초록색 ✓',
-        '✏️ Slide your finger between the letters to cut! Real words turn green ✓')));
+      t('글자 사이를 손가락으로 쓱~ 그어서 잘라 볼까요? 진짜 단어가 되면 초록색 ✓',
+        'Slide your finger between the letters to cut! Real words turn green ✓')));
     const wrap=el('div',{style:'position:relative;padding:12px 0;'});
     const strip=el('div',{class:'cutstrip'}); const layer=el('div',{class:'cutlayer'});
     const guide=el('div',{class:'guide'}); layer.appendChild(guide); wrap.append(strip,layer);
@@ -205,18 +226,18 @@ function tokenRound(words){
         if(cuts.has(i)||i===chars.length-1){
           if(wordSet.has(txt)){group.classList.add('word'); group.appendChild(el('span',{class:'wtick'},'✓'));}
           strip.appendChild(group);
-          if(i!==chars.length-1){strip.appendChild(el('div',{class:'cutmark'},'✂️')); group=el('div',{class:'cgroup'}); txt='';}
+          if(i!==chars.length-1){const cm=el('div',{class:'cutmark'});cm.innerHTML=ICONS.scissors;strip.appendChild(cm); group=el('div',{class:'cgroup'}); txt='';}
         }
       }
       const ok=cuts.size===target.size&&[...cuts].every(x=>target.has(x));
-      if(ok&&!solved){solved=true; status.textContent=t('🎉 완벽하게 단어로 나눴어요!','🎉 Perfectly split into words!');
+      if(ok&&!solved){solved=true; status.textContent=t('완벽하게 단어로 나눴어요!','Perfectly split into words!');
         layer.style.pointerEvents='none'; setTimeout(onDone,800);}
       else if(!ok){status.textContent=cuts.size?
         t('조각: '+(cuts.size+1)+'개 — 단어가 되면 초록색!','Pieces: '+(cuts.size+1)+' — real words turn green!'):'';}
     }
     render();
-    const resetBtn=el('button',{class:'btn home',style:'font-size:19px;padding:9px 20px;margin-top:10px;'},
-      t('✂️ 다시 잘라보기','✂️ Cut again'));
+    const resetBtn=el('button',{class:'btn home',style:'font-size:19px;padding:9px 20px;margin-top:10px;'});
+    resetBtn.innerHTML=ICONS.scissors+t('다시 잘라보기','Cut again');
     resetBtn.onclick=()=>{if(solved)return;cuts.clear();solved=false;layer.style.pointerEvents='';
       status.textContent='';render();};
     box.append(resetBtn);
@@ -239,16 +260,16 @@ function gameTokenize(stage,c){
     ? [["오늘은","날씨가","참","좋아요"],["나는","친구랑","떡볶이를","먹었어요"],["우리","학교","앞","분식집은","맛있어요"]]
     : [["I","like","rainbows"],["We","eat","pizza","today"],["My","dog","runs","fast"]];
   const notes=[
-    t("✂️ 글자를 잘라 단어 조각을 만들었어요! 이 조각 하나하나를 '토큰'이라고 불러요.",
-      "✂️ You cut the letters into word pieces! Each piece is called a 'token'."),
-    t("✂️ 긴 문장도 작은 조각으로 척척 나눌 수 있지요? 잘하고 있어요!",
-      "✂️ Even long sentences split into pieces — you're doing great!")
+    t("글자를 잘라 단어 조각을 만들었어요! 이 조각 하나하나를 '토큰'이라고 불러요.",
+      "You cut the letters into word pieces! Each piece is called a 'token'."),
+    t("긴 문장도 작은 조각으로 척척 나눌 수 있지요? 잘하고 있어요!",
+      "Even long sentences split into pieces — you're doing great!")
   ];
   const rounds=W.map((w,i)=>({fn:tokenRound(w), note:notes[i]}));
   runRounds(stage, rounds, c,
-    t(`✂️ 잘했어요! 긴 문장도 작은 <b>단어 조각(토큰)</b>으로 나뉘지요?<br>
+    t(`잘했어요! 긴 문장도 작은 <b>단어 조각(토큰)</b>으로 나뉘지요?<br>
         <span class="ai">AI도 문장을 통째로 안 읽고, 이렇게 조각조각 잘라서 하나씩 살펴봐요.</span>`,
-      `✂️ Great job! Even a long sentence breaks into little <b>word pieces (tokens)</b>.<br>
+      `Great job! Even a long sentence breaks into little <b>word pieces (tokens)</b>.<br>
         <span class="ai">AI doesn't read a whole sentence at once — it cuts it into pieces and looks at them one by one.</span>`));
 }
 
@@ -256,9 +277,10 @@ function gameTokenize(stage,c){
 function embedRound(villages, items){
   return (box,onDone)=>{
     box.appendChild(el('div',{style:'font-size:20px;opacity:.78'},
-      t('👆 단어를 끌어다 알맞은 마을에 놓아 볼까요?','👆 Drag each word into the right town!')));
+      t('단어를 끌어다 알맞은 마을에 놓아 볼까요?','Drag each word into the right town!')));
     let placed=0; const pen=el('div',{class:'row'}); const vwrap=el('div',{class:'villages'}); const vEls=[];
-    villages.forEach(v=>{const node=el('div',{class:'village '+v.cls}); node.appendChild(el('h3',null,v.label));
+    villages.forEach(v=>{const node=el('div',{class:'village '+v.cls});
+      const h=el('h3'); h.innerHTML=(VILLAGE_ICONS[v.cls]||'')+'<span>'+v.label+'</span>'; node.appendChild(h);
       const p=el('div',{class:'pen'}); node.appendChild(p); node._type=v.type; node._pen=p; vEls.push(node); vwrap.appendChild(node);});
     function over(x,y){return vEls.find(v=>{const r=v.getBoundingClientRect();return x>r.left&&x<r.right&&y>r.top&&y<r.bottom;});}
     function makeChip(it){
@@ -282,23 +304,23 @@ function embedRound(villages, items){
 }
 function gameEmbed(stage,c){
   const R = LANG==='ko' ? [
-    {v:[{type:'a',cls:'animal',label:'🦁 동물 마을'},{type:'f',cls:'food',label:'🍎 음식 마을'}],
+    {v:[{type:'a',cls:'animal',label:'동물 마을'},{type:'f',cls:'food',label:'음식 마을'}],
      i:[{w:'토끼',type:'a'},{w:'사자',type:'a'},{w:'곰',type:'a'},{w:'사과',type:'f'},{w:'빵',type:'f'},{w:'김밥',type:'f'}]},
-    {v:[{type:'c',cls:'sky',label:'🚗 탈것 마을'},{type:'n',cls:'nature',label:'🌳 자연 마을'}],
+    {v:[{type:'c',cls:'sky',label:'탈것 마을'},{type:'n',cls:'nature',label:'자연 마을'}],
      i:[{w:'자동차',type:'c'},{w:'기차',type:'c'},{w:'자전거',type:'c'},{w:'나무',type:'n'},{w:'꽃',type:'n'},{w:'바다',type:'n'}]}
   ] : [
-    {v:[{type:'a',cls:'animal',label:'🦁 Animals'},{type:'f',cls:'food',label:'🍎 Foods'}],
+    {v:[{type:'a',cls:'animal',label:'Animals'},{type:'f',cls:'food',label:'Foods'}],
      i:[{w:'rabbit',type:'a'},{w:'lion',type:'a'},{w:'bear',type:'a'},{w:'apple',type:'f'},{w:'bread',type:'f'},{w:'rice',type:'f'}]},
-    {v:[{type:'c',cls:'sky',label:'🚗 Vehicles'},{type:'n',cls:'nature',label:'🌳 Nature'}],
+    {v:[{type:'c',cls:'sky',label:'Vehicles'},{type:'n',cls:'nature',label:'Nature'}],
      i:[{w:'car',type:'c'},{w:'train',type:'c'},{w:'bike',type:'c'},{w:'tree',type:'n'},{w:'flower',type:'n'},{w:'sea',type:'n'}]}
   ];
-  const notes=[ t('🗺️ 동물은 동물끼리, 음식은 음식끼리 가까이 모였어요! 비슷한 단어는 가까운 곳에 살아요.',
-    '🗺️ Animals with animals, foods with foods! Similar words live close together.') ];
+  const notes=[ t('동물은 동물끼리, 음식은 음식끼리 가까이 모였어요! 비슷한 단어는 가까운 곳에 살아요.',
+    'Animals with animals, foods with foods! Similar words live close together.') ];
   const rounds=R.map((r,i)=>({fn:embedRound(r.v,r.i), note:notes[i]}));
   runRounds(stage, rounds, c,
-    t(`🗺️ 멋져요! 비슷한 단어끼리 <b>가까운 마을</b>에 모였지요?<br>
+    t(`멋져요! 비슷한 단어끼리 <b>가까운 마을</b>에 모였지요?<br>
         <span class="ai">AI는 단어를 '위치'로 기억해서, 뜻이 비슷하면 가까이 둬요. 그래서 단어의 의미를 알아내요.</span>`,
-      `🗺️ Awesome! Similar words gathered in <b>nearby towns</b>.<br>
+      `Awesome! Similar words gathered in <b>nearby towns</b>.<br>
         <span class="ai">AI remembers words as positions and keeps similar meanings close together — that's how it understands them.</span>`));
 }
 
@@ -308,7 +330,7 @@ function orderRound(target, guide){
     let jumble=shuffle(target);
     if(target.length>1){let tries=0;while(jumble.join(" ")===target.join(" ")&&tries++<20)jumble=shuffle(target);}
     box.appendChild(el('div',{style:'font-size:21px;opacity:.78'},
-      t('🤖 순서를 모르면 AI는 이렇게 봐요: ','🤖 Without order, AI sees: ')+'"'+jumble.join(' ')+'"'));
+      t('순서를 모르면 AI는 이렇게 봐요: ','Without order, AI sees: ')+'"'+jumble.join(' ')+'"'));
     const slots=el('div',{class:'row'});
     const blanks=target.map(()=>{const b=el('div',{class:'chip blank'},'＿');b.style.minWidth='130px';slots.appendChild(b);return b;});
     box.append(slots, el('div',{style:'font-size:20px;opacity:.78'},guide));
@@ -328,8 +350,8 @@ function orderRound(target, guide){
   };
 }
 function gamePosition(stage,c){
-  const gKo="👇 뒤죽박죽 단어를 바른 순서대로 터치해주세요.";
-  const gEn="👇 Tap the jumbled words in the right order.";
+  const gKo="뒤죽박죽 단어를 바른 순서대로 터치해주세요.";
+  const gEn="Tap the jumbled words in the right order.";
   const R = LANG==='ko' ? [
     {tg:["로봇팔이","그림을","그려요"], g:gKo},
     {tg:["앨리스가","축구공을","차요"], g:gKo},
@@ -344,20 +366,20 @@ function gamePosition(stage,c){
     {tg:["Spot","eats","a red apple"], g:gEn}
   ];
   const notes=[
-    t("🔀 순서를 맞추니 말이 되네요! 뒤죽박죽이면 무슨 뜻인지 알 수 없어요.",
-      "🔀 In the right order it makes sense! All jumbled up, you can't tell what it means."),
-    t("🔀 단어가 다 있어도 순서가 엉키면 이상하지요? 순서가 뜻을 만들어요.",
-      "🔀 Even with all the words, the wrong order is confusing. Order makes the meaning."),
-    t("🔀 주어 → 목적어 → 서술어 순서로 놓으니 딱 맞지요?",
-      "🔀 Subject → verb → object — that's the order that fits!"),
-    t("🔀 순서만 바꿔도 누가 무엇을 했는지가 달라져요!",
-      "🔀 Just changing the order changes who did what!")
+    t("순서를 맞추니 말이 되네요! 뒤죽박죽이면 무슨 뜻인지 알 수 없어요.",
+      "In the right order it makes sense! All jumbled up, you can't tell what it means."),
+    t("단어가 다 있어도 순서가 엉키면 이상하지요? 순서가 뜻을 만들어요.",
+      "Even with all the words, the wrong order is confusing. Order makes the meaning."),
+    t("주어 → 목적어 → 서술어 순서로 놓으니 딱 맞지요?",
+      "Subject → verb → object — that's the order that fits!"),
+    t("순서만 바꿔도 누가 무엇을 했는지가 달라져요!",
+      "Just changing the order changes who did what!")
   ];
   const rounds=R.map((r,i)=>({fn:orderRound(r.tg,r.g), note:notes[i]}));
   runRounds(stage, rounds, c,
-    t(`🔀 그래서 AI는 단어가 '몇 번째'에 있는지(<b>위치</b>)도 꼭 알아야 해요.<br>
+    t(`그래서 AI는 단어가 '몇 번째'에 있는지(<b>위치</b>)도 꼭 알아야 해요.<br>
         <span class="ai">순서를 모르면 단어가 뒤죽박죽 섞인 것처럼 보여서, 무슨 뜻인지 알 수 없거든요!</span>`,
-      `🔀 That's why AI must know each word's place (its <b>position</b>).<br>
+      `That's why AI must know each word's place (its <b>position</b>).<br>
         <span class="ai">Without order, words look all jumbled up and AI can't tell what they mean!</span>`));
 }
 
@@ -372,7 +394,7 @@ function attnRound(q, tokens){
       if(tk.role!=='x'){sp.onclick=()=>{
         if(tk.role==='ans'){sent.classList.add('dim');sp.classList.add('lit');sp.classList.remove('dim');
           hint.textContent=''; setTimeout(onDone,1100);}
-        else{hint.textContent=t('🤔 다시 한 번 생각해보세요!','🤔 Think again!');
+        else{hint.textContent=t('다시 한 번 생각해보세요!','Think again!');
           sp.classList.add('shake'); setTimeout(()=>sp.classList.remove('shake'),400);}
       };}
       sent.appendChild(sp);
@@ -383,8 +405,8 @@ function attnRound(q, tokens){
 function multiHeadRound(sentence, colorWord, speedWord){
   return (box,onDone)=>{
     box.appendChild(el('div',{style:'font-size:22px'},
-      t('🕵️ 탐정 두 명이 같은 문장에서 서로 다른 걸 찾아요!','🕵️ Two detectives find different things in the same sentence!')));
-    const q=el('div',{style:'font-size:24px'}, t('🖌️ 색깔 탐정: 무슨 색일까요? 단어를 눌러 주세요!','🖌️ Color detective: What color is it? Tap the word!'));
+      t('탐정 두 명이 같은 문장에서 서로 다른 걸 찾아요!','Two detectives find different things in the same sentence!')));
+    const q=el('div',{style:'font-size:24px'}, t('색깔 탐정: 무슨 색일까요? 단어를 눌러 주세요!','Color detective: What color is it? Tap the word!'));
     box.appendChild(q);
     const sent=el('div',{class:'sentence'}); const hint=el('div',{class:'hint'},''); let phase=0;
     sentence.split(' ').forEach(w=>{
@@ -393,11 +415,11 @@ function multiHeadRound(sentence, colorWord, speedWord){
       const role = bare===colorWord?'color' : (bare===speedWord?'speed':'x');
       sp.onclick=()=>{const want=phase===0?'color':'speed';
         if(role===want){sp.classList.add('lit');hint.textContent='';
-          if(phase===0){phase=1;q.textContent=t('💨 속도가 어떤가요? 단어를 눌러 주세요!','💨 What is its speed like? Tap the word!');}
+          if(phase===0){phase=1;q.textContent=t('속도 탐정: 속도가 어떤가요? 단어를 눌러 주세요!','Speed detective: What is its speed like? Tap the word!');}
           else setTimeout(onDone,1100);}
         else if(role!=='x'){hint.textContent=t('그건 다른 탐정이 찾을 거예요~',"That's for the other detective~");
           sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
-        else{hint.textContent=t('🤔 다시 한 번 생각해보세요!','🤔 Think again!');sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
+        else{hint.textContent=t('다시 한 번 생각해보세요!','Think again!');sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
       };
       sent.appendChild(sp);
     });
@@ -408,35 +430,35 @@ function gameAttention(stage,c){
   let rounds;
   if(LANG==='ko'){
     rounds=[
-      {fn:attnRound('🔦 "배고픈" 건 누구일까요? 단어를 눌러 주세요.',
+      {fn:attnRound('"배고픈" 건 누구일까요? 단어를 눌러 주세요.',
         [{t:'사자가',role:'ans'},{t:'토끼를',role:'no'},{t:'쫓아갔어요.',role:'x'},{t:'너무',role:'x'},{t:'배고팠거든요.',role:'x'}]),
-       note:'🔦 쫓아가던 \'사자\'가 배고픈 거였어요! AI도 헷갈리는 말을 만나면, 어떤 단어를 봐야 할지 손전등을 비춰서 정해요. 이게 바로 어텐션이에요.'},
-      {fn:attnRound('🔦 "달콤한" 건 무엇일까요? 단어를 눌러 주세요.',
+       note:'쫓아가던 \'사자\'가 배고픈 거였어요! AI도 헷갈리는 말을 만나면, 어떤 단어를 봐야 할지 손전등을 비춰서 정해요. 이게 바로 어텐션이에요.'},
+      {fn:attnRound('"달콤한" 건 무엇일까요? 단어를 눌러 주세요.',
         [{t:'민지가',role:'no'},{t:'사과를',role:'ans'},{t:'먹었어요.',role:'x'},{t:'정말',role:'x'},{t:'달콤했어요.',role:'x'}]),
-       note:'🔦 달콤한 건 \'사과\'였지요? AI는 \'달콤한\'이 어떤 단어와 어울리는지 집중해서 찾아요 — 이게 어텐션이에요.'},
-      {fn:attnRound('🔦 "그 안"은 무엇의 안일까요? 단어를 눌러 주세요.',
+       note:'달콤한 건 \'사과\'였지요? AI는 \'달콤한\'이 어떤 단어와 어울리는지 집중해서 찾아요 — 이게 어텐션이에요.'},
+      {fn:attnRound('"그 안"은 무엇의 안일까요? 단어를 눌러 주세요.',
         [{t:'지호는',role:'no'},{t:'가방을',role:'ans'},{t:'열었어요.',role:'x'},{t:'그',role:'x'},{t:'안에',role:'x'},{t:'책이',role:'no'},{t:'있었어요.',role:'x'}]),
-       note:'🔦 책은 \'가방\' 안에 있었어요. \'그 안\'이 무엇을 가리키는지, AI는 앞 단어들을 살펴서 알아내요 — 어텐션 덕분이에요.'},
+       note:'책은 \'가방\' 안에 있었어요. \'그 안\'이 무엇을 가리키는지, AI는 앞 단어들을 살펴서 알아내요 — 어텐션 덕분이에요.'},
       {fn:multiHeadRound('빨간 자동차가 빠르게 달려요.','빨간','빠르게'), note:''}
     ];
   } else {
     rounds=[
-      {fn:attnRound('🔦 Who was hungry? Tap the word.',
+      {fn:attnRound('Who was hungry? Tap the word.',
         [{t:'The',role:'x'},{t:'lion',role:'ans'},{t:'chased',role:'x'},{t:'the',role:'x'},{t:'rabbit',role:'no'},{t:'because',role:'x'},{t:'it',role:'x'},{t:'was',role:'x'},{t:'hungry.',role:'x'}]),
-       note:"🔦 The 'lion' that was chasing was hungry! When AI meets a confusing word, it shines a flashlight to decide which word to look at. That's attention."},
-      {fn:attnRound('🔦 What was sweet? Tap the word.',
+       note:"The 'lion' that was chasing was hungry! When AI meets a confusing word, it shines a flashlight to decide which word to look at. That's attention."},
+      {fn:attnRound('What was sweet? Tap the word.',
         [{t:'Minji',role:'no'},{t:'ate',role:'x'},{t:'an',role:'x'},{t:'apple.',role:'ans'},{t:'It',role:'x'},{t:'was',role:'x'},{t:'very',role:'x'},{t:'sweet.',role:'x'}]),
-       note:"🔦 The sweet thing was the 'apple'! AI focuses to find which word 'sweet' belongs with — that's attention."},
-      {fn:attnRound('🔦 What was the book inside? Tap the word.',
+       note:"The sweet thing was the 'apple'! AI focuses to find which word 'sweet' belongs with — that's attention."},
+      {fn:attnRound('What was the book inside? Tap the word.',
         [{t:'Jiho',role:'no'},{t:'opened',role:'x'},{t:'the',role:'x'},{t:'bag.',role:'ans'},{t:'A',role:'x'},{t:'book',role:'no'},{t:'was',role:'x'},{t:'inside',role:'x'},{t:'it.',role:'x'}]),
-       note:"🔦 The book was inside the 'bag'. AI looks back at earlier words to find what 'it' points to — thanks to attention."},
+       note:"The book was inside the 'bag'. AI looks back at earlier words to find what 'it' points to — thanks to attention."},
       {fn:multiHeadRound('The red car runs fast.','red','fast'), note:''}
     ];
   }
   runRounds(stage, rounds, c,
-    t(`🔦 대단해요! 색깔 탐정과 속도 탐정처럼, AI는 여러 가지를 <b>동시에</b> 살펴봐요.<br>
+    t(`대단해요! 색깔 탐정과 속도 탐정처럼, AI는 여러 가지를 <b>동시에</b> 살펴봐요.<br>
         <span class="ai">이렇게 어떤 단어를 봐야 할지 골라내는 것이 바로 어텐션이에요!</span>`,
-      `🔦 Amazing! Like the color and speed detectives, AI looks at many things <b>at the same time</b>.<br>
+      `Amazing! Like the color and speed detectives, AI looks at many things <b>at the same time</b>.<br>
         <span class="ai">Choosing which word to look at — that's attention!</span>`));
 }
 
@@ -463,45 +485,53 @@ function gamePredict(stage,c){
   let rounds;
   if(LANG==='ko'){
     rounds=[
-      {fn:predictRound('🐰 토끼가 당근을',[{w:'먹어요',p:85,ok:true},{w:'잠자요',p:10},{w:'날아요',p:5}]),
-       note:'🔮 AI가 가장 어울리는 단어를 골랐어요! 앞 단어들을 보고 정한 거예요.'},
-      {fn:predictRound('🌧️ 비가 와서 우산을',[{w:'펴요',p:80,ok:true},{w:'던져요',p:15},{w:'먹어요',p:5}]),
-       note:'🔮 앞 단어들을 보고 다음에 올 말을 척척 맞히지요?'},
-      {fn:predictRound('🏰 용감한 기사가 성을 향해 힘차게',
+      {fn:predictRound('토끼가 당근을',[{w:'먹어요',p:85,ok:true},{w:'잠자요',p:10},{w:'날아요',p:5}]),
+       note:'AI가 가장 어울리는 단어를 골랐어요! 앞 단어들을 보고 정한 거예요.'},
+      {fn:predictRound('비가 와서 우산을',[{w:'펴요',p:80,ok:true},{w:'던져요',p:15},{w:'먹어요',p:5}]),
+       note:'앞 단어들을 보고 다음에 올 말을 척척 맞히지요?'},
+      {fn:predictRound('용감한 기사가 성을 향해 힘차게',
         [{w:'달려갔어요',p:74,ok:true},{w:'기어갔어요',p:9},{w:'날아갔어요',p:17}]),
-       note:'🔮 문장이 길어도 앞 내용을 보고 가장 어울리는 말을 골랐어요!'},
-      {fn:predictRound('🌊 아이들이 바닷가에서 모래로 멋진',
+       note:'문장이 길어도 앞 내용을 보고 가장 어울리는 말을 골랐어요!'},
+      {fn:predictRound('아이들이 바닷가에서 모래로 멋진',
         [{w:'성을',p:70,ok:true},{w:'라면을',p:10},{w:'우산을',p:20}], '만들었어요.'),
-       note:'🔮 어려운 문장에서도 AI는 빈칸에 올 말을 척척 맞혀요!'},
-      {fn:predictRound('🚀 우주 비행사가 하늘에서 반짝이는',
+       note:'어려운 문장에서도 AI는 빈칸에 올 말을 척척 맞혀요!'},
+      {fn:predictRound('우주 비행사가 하늘에서 반짝이는',
         [{w:'별을',p:72,ok:true},{w:'양말을',p:8},{w:'바나나를',p:20}], '보았어요.'), note:''}
     ];
   } else {
     rounds=[
-      {fn:predictRound('🐰 The bunny eats a',[{w:'carrot',p:85,ok:true},{w:'rock',p:10},{w:'cloud',p:5}]),
-       note:'🔮 AI picked the word that fits best, using the earlier words!'},
-      {fn:predictRound('🌧️ It is raining, so I open my',[{w:'umbrella',p:80,ok:true},{w:'window',p:15},{w:'sandwich',p:5}]),
-       note:'🔮 It guesses the next word from what came before!'},
-      {fn:predictRound('🏰 The brave knight rushed to save the',
+      {fn:predictRound('The bunny eats a',[{w:'carrot',p:85,ok:true},{w:'rock',p:10},{w:'cloud',p:5}]),
+       note:'AI picked the word that fits best, using the earlier words!'},
+      {fn:predictRound('It is raining, so I open my',[{w:'umbrella',p:80,ok:true},{w:'window',p:15},{w:'sandwich',p:5}]),
+       note:'It guesses the next word from what came before!'},
+      {fn:predictRound('The brave knight rushed to save the',
         [{w:'princess',p:74,ok:true},{w:'potato',p:9},{w:'pillow',p:17}]),
-       note:'🔮 Even in a long sentence, AI picks the word that fits best!'},
-      {fn:predictRound('🌊 The kids built a nice',
+       note:'Even in a long sentence, AI picks the word that fits best!'},
+      {fn:predictRound('The kids built a nice',
         [{w:'sandcastle',p:70,ok:true},{w:'noodle',p:10},{w:'umbrella',p:20}], 'on the beach.'),
-       note:'🔮 Even in a tricky sentence, AI fills in the blank!'},
-      {fn:predictRound('🚀 The astronaut saw a bright',
+       note:'Even in a tricky sentence, AI fills in the blank!'},
+      {fn:predictRound('The astronaut saw a bright',
         [{w:'star',p:72,ok:true},{w:'sock',p:8},{w:'banana',p:20}], 'in the sky.'), note:''}
     ];
   }
   runRounds(stage, rounds, c,
-    t(`🔮 봤지요? AI는 이렇게 <b>한 단어씩</b> 다음에 올 말을 골라서 긴 문장을 만들어요.<br>
+    t(`봤지요? AI는 이렇게 <b>한 단어씩</b> 다음에 올 말을 골라서 긴 문장을 만들어요.<br>
         <span class="ai">챗봇이 술술 이야기하는 비밀이 바로 이거예요!</span>`,
-      `🔮 See? AI picks the next word <b>one at a time</b> to build long sentences.<br>
+      `See? AI picks the next word <b>one at a time</b> to build long sentences.<br>
         <span class="ai">That's the secret behind how chatbots talk!</span>`));
 }
 
-/* ---------- 색종이 ---------- */
-function fire(){const e=['🎉','⭐','🎊','🏅','✨'];
-  for(let i=0;i<48;i++){const c=el('div',{class:'confetti'},e[i%e.length]);
+/* ---------- 색종이 (SVG 파스텔 조각) ---------- */
+function fire(){
+  const colors=['#ff8a5c','#35b57e','#5d86e0','#ffc23c','#a97be0','#ff8fc0'];
+  const shapes=[
+    f=>`<circle cx="12" cy="12" r="6.5" fill="${f}"/>`,
+    f=>`<rect x="6" y="6" width="12" height="12" rx="3" fill="${f}"/>`,
+    f=>`<path d="M12 3l2.5 6 6.5.5-5 4.3 1.6 6.2L12 16.6 6.4 20l1.6-6.2-5-4.3 6.5-.5z" fill="${f}"/>`,
+    f=>`<path d="M12 4.5l7.5 13.5H4.5z" fill="${f}"/>`
+  ];
+  for(let i=0;i<48;i++){const c=el('div',{class:'confetti'});
+    c.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${shapes[i%shapes.length](colors[i%colors.length])}</svg>`;
     c.style.left=Math.random()*100+'vw';c.style.animationDuration=(2+Math.random()*2)+'s';c.style.animationDelay=Math.random()+'s';
     document.body.appendChild(c);setTimeout(()=>c.remove(),4600);}}
 
@@ -682,7 +712,7 @@ function buildReportRows(s,completes,hours,today){
   const hpeak=hr.rows.slice().sort((a,b)=>b.sum-a.sum)[0];
   const rows=[];
   const KV=(k,v)=>rows.push([k,{v:v}]);
-  rows.push([{v:'📊 라이미 이용 통계 리포트',s:2}]);
+  rows.push([{v:'라이미 이용 통계 리포트',s:2}]);
   rows.push([{v:'생성일'},{v:today}]);
   rows.push([]);
   rows.push([{v:'전체 요약',s:1},{v:'',s:1}]);
@@ -784,7 +814,7 @@ function downloadBytes(bytes,filename){
 /* 앱 버전: 서비스 워커 캐시 이름(sw.js의 'raim-ai-vN')에서 실제 배포 버전을 읽어 표시.
    배포 시 sw.js의 CACHE만 올리면 관리자 화면 버전도 자동으로 따라감.
    SW 미등록(개발/파일 직접 열기 등) 시엔 아래 기본값을 사용. */
-const APP_VERSION_FALLBACK='v7';
+const APP_VERSION_FALLBACK='v9';
 function getAppVersion(){
   return new Promise(resolve=>{
     try{
@@ -806,7 +836,7 @@ function askPin(onOk,onCancel){
   let entry='';
   const ov=el('div',{id:'adminPinOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;width:100%;max-width:320px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
-  card.append(el('div',{style:'font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;'},'🔒 관리자'));
+  card.append(el('div',{style:'font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;'},'관리자'));
   const sub=el('div',{style:'font-size:13px;color:#888;text-align:center;margin-bottom:14px;'},'비밀번호를 입력하세요');
   card.append(sub);
   const dots=el('div',{style:'display:flex;justify-content:center;gap:14px;margin-bottom:18px;'});
@@ -845,7 +875,7 @@ function showAdmin(){
 
   const ov=el('div',{id:'adminOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;max-width:520px;width:100%;max-height:86vh;display:flex;flex-direction:column;padding:22px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
-  card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'📊 이용 통계 (관리자)'));
+  card.append(el('h2',{style:'margin:0 0 6px;font-size:22px;'},'이용 통계 (관리자)'));
   const verLine=el('div',{style:'font-size:12px;color:#aaa;margin-bottom:8px;'},'버전 …');
   card.append(verLine);
   getAppVersion().then(v=>{verLine.textContent='버전 '+v;});

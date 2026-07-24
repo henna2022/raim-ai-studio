@@ -41,9 +41,12 @@
   .brand-name{font-weight:800;font-size:26px;color:var(--ink);letter-spacing:-.3px;white-space:nowrap;}
   .brand-tag{font-size:14px;color:var(--sub);white-space:nowrap;}
   .actions{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  /* 버튼 안 인라인 SVG 아이콘(이모지 대체) */
+  .ic{width:1em;height:1em;flex:none;display:block;}
   /* 무테 pill 버튼 + 파스텔 단색 그림자 */
   .back{font-weight:700;font-size:20px;background:#fff;color:#5b4a6e;border:none;
-    border-radius:30px;padding:11px 20px;box-shadow:0 4px 0 #c9dcf0;cursor:pointer;transition:transform .12s;}
+    border-radius:30px;padding:11px 20px;box-shadow:0 4px 0 #c9dcf0;cursor:pointer;transition:transform .12s;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;}
   .back:active{transform:translateY(3px);box-shadow:0 1px 0 #c9dcf0;}
   .lang{background:#fff;color:#3f6bd6;}
   .reset{background:#fff;color:var(--pinkD);box-shadow:0 4px 0 #f4c9de;}
@@ -66,7 +69,8 @@
   .stampbar{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px;}
   .stamps{display:flex;gap:10px;}
   .stamp{width:50px;height:50px;border-radius:50%;border:none;background:#fff;box-shadow:var(--shadow);
-    display:grid;place-items:center;font-size:26px;}
+    display:grid;place-items:center;}
+  .stamp svg{width:36px;height:36px;display:block;}
   .stamp.on{background:#fff3cf;box-shadow:0 8px 0 rgba(240,205,110,.35);animation:pop .35s;}
   .stampcount{font-size:24px;font-weight:700;color:var(--sub);}
 
@@ -80,7 +84,6 @@
     border:none;background:#fff;box-shadow:0 4px 0 rgba(120,150,210,.20);display:grid;place-items:center;font-size:24px;font-weight:800;}
   .card .done-badge{position:absolute;top:8px;right:10px;font-size:26px;color:var(--c2);}
   .card.done{outline:none;}
-  .card .emoji{font-size:50px;}
   .card .art{width:76px;height:76px;display:flex;align-items:center;justify-content:center;}
   .card .art svg{width:100%;height:100%;display:block;}
   .card .name{font-size:24px;font-weight:700;}
@@ -123,7 +126,8 @@
   .villages{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;}
   .village{width:300px;min-height:180px;border:4px dashed #b9cdf0;border-radius:26px;padding:14px;
     display:flex;flex-direction:column;align-items:center;gap:10px;background:#fff;box-shadow:var(--shadow);}
-  .village h3{margin:0;font-size:28px;font-weight:800;}
+  .village h3{margin:0;font-size:28px;font-weight:800;display:flex;align-items:center;gap:9px;}
+  .village h3 .vic{width:34px;height:34px;flex:none;}
   .village .pen{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
   .village.animal{background:#eafff3;border-color:#8fd7b0;}
   .village.food{background:#fff2e3;border-color:#f3bd90;}
@@ -141,7 +145,8 @@
   .cgroup.word{background:#e7ffe7;box-shadow:0 8px 0 rgba(143,215,176,.35);}
   .ctile{font-weight:700;font-size:40px;padding:2px 6px;}
   .wtick{color:var(--c2);font-size:26px;margin-left:4px;}
-  .cutmark{font-size:24px;opacity:.5;}
+  .cutmark{opacity:.5;display:flex;align-items:center;color:var(--ink);}
+  .cutmark .ic{width:22px;height:22px;transform:rotate(-90deg);}
 
   .sentence{font-size:38px;font-weight:500;line-height:1.7;text-align:center;max-width:1050px;word-break:keep-all;overflow-wrap:break-word;}
   .word{cursor:pointer;border-radius:12px;padding:2px 8px;transition:all .25s;}
@@ -163,7 +168,8 @@
   .btnrow{display:flex;gap:14px;justify-content:center;margin-top:10px;}
   /* pill 버튼 — go=파랑 그라데이션 primary, home=흰색 secondary */
   .btn{font-weight:800;font-size:24px;border:none;border-radius:30px;
-    padding:16px 30px;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s;}
+    padding:16px 30px;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s;
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;}
   .btn:active{transform:translateY(3px);}
   .btn.go{background:linear-gradient(160deg,#8fb6ff,#6f97f0);color:#fff;box-shadow:0 7px 0 var(--blueD);}
   .btn.go:active{box-shadow:0 3px 0 var(--blueD);}
@@ -173,7 +179,8 @@
 
   .cert{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;}
   .cert h1{font-weight:800;font-size:50px;margin:0;color:var(--blueD);}
-  .confetti{position:fixed;top:-20px;font-size:24px;animation:fall linear forwards;pointer-events:none;z-index:9999;}
+  .confetti{position:fixed;top:-20px;width:20px;height:20px;animation:fall linear forwards;pointer-events:none;z-index:9999;}
+  .confetti svg{width:100%;height:100%;display:block;}
   @keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}
   .hidden{display:none!important;}
 
