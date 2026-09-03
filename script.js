@@ -102,7 +102,8 @@ function setText(id,s){const e=document.getElementById(id);if(e)e.textContent=s;
 function setHTML(id,s){const e=document.getElementById(id);if(e)e.innerHTML=s;}
 
 /* ---------- 화면 ---------- */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+let screenSeq=0;   // 화면 전환마다 증가 — 이전 화면 게임의 지연 콜백(setTimeout onDone)을 무효화하는 데 씀
+function show(id){screenSeq++;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');}
 function goHome(){
   if(done.size>=5){showComplete();return;} renderHome();show('home');}
@@ -183,13 +184,14 @@ function finish(c, html){
   r.classList.add('show');
 }
 function runRounds(stage, rounds, c, finalReveal){
-  let i=0;
+  let i=0; const seq=screenSeq;
   function go(){
     stage.innerHTML=''; hideReveal();
     if(rounds.length>1) stage.appendChild(el('div',{style:'font-size:22px;opacity:.6'},(i+1)+' / '+rounds.length));
     const area=el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:16px;'});
     stage.appendChild(area);
     rounds[i].fn(area, (ok)=>{
+      if(seq!==screenSeq)return;   // 결과 대기 중 '처음으로'/초기화/타임아웃으로 화면을 떠났으면 무시(다른 게임 화면 오염 방지)
       const last = i>=rounds.length-1;
       if(ok===false){
         const wrongNote = t('AI는 생각이 조금 다른 것 같아요. 어떤 막대가 가장 높은지 볼까요?',
@@ -243,15 +245,20 @@ function tokenRound(words){
     box.append(resetBtn);
     function gapCenters(){const cs=[];for(let i=0;i<tiles.length-1;i++){
       const a=tiles[i].getBoundingClientRect(),b=tiles[i+1].getBoundingClientRect();cs.push({i,x:(a.right+b.left)/2});}return cs;}
-    let down=false,x0,y0;
-    layer.addEventListener('pointerdown',e=>{down=true;const r=layer.getBoundingClientRect();
-      x0=e.clientX;y0=e.clientY;guide.style.display='block';guide.style.left=(e.clientX-r.left)+'px';try{layer.setPointerCapture(e.pointerId);}catch(_){}});
-    layer.addEventListener('pointermove',e=>{if(!down)return;const r=layer.getBoundingClientRect();guide.style.left=(e.clientX-r.left)+'px';});
-    layer.addEventListener('pointerup',e=>{if(!down)return;down=false;guide.style.display='none';
-      if(Math.abs(e.clientY-y0)<14)return;
-      const cx=(x0+e.clientX)/2,cs=gapCenters();if(!cs.length)return;
-      let best=cs[0];for(const g of cs)if(Math.abs(g.x-cx)<Math.abs(best.x-cx))best=g;
-      if(cuts.has(best.i))cuts.delete(best.i);else{cuts.add(best.i);}
+    /* 가이드 선은 항상 손가락에서 가장 가까운 글자 틈에 스냅되고, 손을 뗄 때 '그 선이 있는 틈'을 자른다.
+       (이전엔 시작점·끝점의 중간 X로 잘라서, 비스듬히 그으면 선 위치와 다른 곳이 잘렸음) */
+    let pid=null,y0,lx=0,cs=[],hit=null;
+    function follow(x){if(!cs.length)return;hit=cs[0];for(const g of cs)if(Math.abs(g.x-x)<Math.abs(hit.x-x))hit=g;
+      guide.style.left=(hit.x-lx)+'px';}
+    function end(){pid=null;hit=null;guide.style.display='none';}
+    layer.addEventListener('pointerdown',e=>{if(pid!==null)return;   // 첫 손가락만 추적(손바닥 등 추가 터치 무시)
+      pid=e.pointerId;y0=e.clientY;lx=layer.getBoundingClientRect().left;cs=gapCenters();
+      follow(e.clientX);guide.style.display='block';try{layer.setPointerCapture(e.pointerId);}catch(_){}});
+    layer.addEventListener('pointermove',e=>{if(e.pointerId===pid)follow(e.clientX);});
+    layer.addEventListener('pointercancel',e=>{if(e.pointerId===pid)end();});
+    layer.addEventListener('pointerup',e=>{if(e.pointerId!==pid)return;follow(e.clientX);const g=hit,dy=Math.abs(e.clientY-y0);end();
+      if(!g||dy<14)return;
+      if(cuts.has(g.i))cuts.delete(g.i);else cuts.add(g.i);
       render();});
   };
 }
@@ -285,14 +292,15 @@ function embedRound(villages, items){
     function over(x,y){return vEls.find(v=>{const r=v.getBoundingClientRect();return x>r.left&&x<r.right&&y>r.top&&y<r.bottom;});}
     function makeChip(it){
       const chip=el('div',{class:'chip drag'},it.w); chip._type=it.type; let drag=false,ox,oy;
-      chip.addEventListener('pointerdown',e=>{drag=true;try{chip.setPointerCapture(e.pointerId);}catch(_){}
+      function lower(){drag=false;vEls.forEach(x=>x.classList.remove('hot'));
+        chip.classList.remove('lift');chip.style.position='';chip.style.left='';chip.style.top='';chip.style.zIndex='';chip.style.width='';}
+      chip.addEventListener('pointercancel',()=>{if(drag)lower();});
+      chip.addEventListener('pointerdown',e=>{if(drag)return;drag=true;try{chip.setPointerCapture(e.pointerId);}catch(_){}
         const r=chip.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;chip.style.width=r.width+'px';
         chip.classList.add('lift');chip.style.position='fixed';chip.style.left=r.left+'px';chip.style.top=r.top+'px';chip.style.zIndex=999;});
       chip.addEventListener('pointermove',e=>{if(!drag)return;chip.style.left=(e.clientX-ox)+'px';chip.style.top=(e.clientY-oy)+'px';
         const v=over(e.clientX,e.clientY);vEls.forEach(x=>x.classList.toggle('hot',x===v));});
-      chip.addEventListener('pointerup',e=>{if(!drag)return;drag=false;vEls.forEach(x=>x.classList.remove('hot'));
-        const v=over(e.clientX,e.clientY);
-        chip.classList.remove('lift');chip.style.position='';chip.style.left='';chip.style.top='';chip.style.zIndex='';chip.style.width='';
+      chip.addEventListener('pointerup',e=>{if(!drag)return;const v=over(e.clientX,e.clientY);lower();
         if(v&&v._type===chip._type){v._pen.appendChild(chip);chip.classList.add('pulse');chip.style.pointerEvents='none';chip.classList.remove('drag');
           placed++; if(placed===items.length)setTimeout(onDone,500);}
         else if(v){v.classList.add('shake');setTimeout(()=>v.classList.remove('shake'),400);}});
@@ -393,7 +401,7 @@ function attnRound(q, tokens){
       const sp=el('span',{class:'word'},tk.t+' ');
       if(tk.role!=='x'){sp.onclick=()=>{
         if(tk.role==='ans'){sent.classList.add('dim');sp.classList.add('lit');sp.classList.remove('dim');
-          hint.textContent=''; setTimeout(onDone,1100);}
+          hint.textContent=''; sent.style.pointerEvents='none'; setTimeout(onDone,1100);}
         else{hint.textContent=t('다시 한 번 생각해보세요!','Think again!');
           sp.classList.add('shake'); setTimeout(()=>sp.classList.remove('shake'),400);}
       };}
@@ -416,7 +424,7 @@ function multiHeadRound(sentence, colorWord, speedWord){
       sp.onclick=()=>{const want=phase===0?'color':'speed';
         if(role===want){sp.classList.add('lit');hint.textContent='';
           if(phase===0){phase=1;q.textContent=t('속도 탐정: 속도가 어떤가요? 단어를 눌러 주세요!','Speed detective: What is its speed like? Tap the word!');}
-          else setTimeout(onDone,1100);}
+          else {sent.style.pointerEvents='none'; setTimeout(onDone,1100);}}
         else if(role!=='x'){hint.textContent=t('그건 다른 탐정이 찾을 거예요~',"That's for the other detective~");
           sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
         else{hint.textContent=t('다시 한 번 생각해보세요!','Think again!');sp.classList.add('shake');setTimeout(()=>sp.classList.remove('shake'),400);}
@@ -814,7 +822,7 @@ function downloadBytes(bytes,filename){
 /* 앱 버전: 서비스 워커 캐시 이름(sw.js의 'raim-ai-vN')에서 실제 배포 버전을 읽어 표시.
    배포 시 sw.js의 CACHE만 올리면 관리자 화면 버전도 자동으로 따라감.
    SW 미등록(개발/파일 직접 열기 등) 시엔 아래 기본값을 사용. */
-const APP_VERSION_FALLBACK='v9';
+const APP_VERSION_FALLBACK='v10';
 function getAppVersion(){
   return new Promise(resolve=>{
     try{
