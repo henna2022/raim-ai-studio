@@ -567,12 +567,13 @@ function statSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function loadStats(){return statGet(STAT_KEY);}
 function saveStats(s){statSet(STAT_KEY,s);}
 function bumpStart(){
+  if(window.RaimCollect) RaimCollect.record('start');   // 전시물 집계(태블릿 3대 합산)
   const s=loadStats(),k=todayKey();s[k]=(s[k]||0)+1;saveStats(s);
   const h=statGet(HOUR_KEY),hk=String(new Date().getHours()).padStart(2,'0');
   h[hk]=(h[hk]||0)+1;statSet(HOUR_KEY,h);
   const lm=statGet(LANG_KEY);lm[LANG]=(lm[LANG]||0)+1;statSet(LANG_KEY,lm);
 }
-function bumpComplete(){const c=statGet(DONE_KEY),k=todayKey();c[k]=(c[k]||0)+1;statSet(DONE_KEY,c);}
+function bumpComplete(){if(window.RaimCollect)RaimCollect.record('complete');const c=statGet(DONE_KEY),k=todayKey();c[k]=(c[k]||0)+1;statSet(DONE_KEY,c);}
 function bumpStage(c,field){const m=statGet(STAGE_KEY),k=String(c);if(!m[k])m[k]={o:0,d:0};m[k][field]=(m[k][field]||0)+1;statSet(STAGE_KEY,m);}
 
 /* ---------- 엑셀(.xlsx) 만들기: 외부 라이브러리 없이 store 방식 ZIP으로 생성 ---------- */
