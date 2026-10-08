@@ -112,6 +112,7 @@ function showComplete(){renderStamps('doneStamps');show('complete');fire();}
 
 /* ---------- 언어 적용 ---------- */
 function applyLang(){
+  document.documentElement.lang=LANG;   // 한국어 줄바꿈 CSS 가 lang="ko" 일 때만 걸리게
   document.title=t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab");
   setText('startTitle', t('라이미의 AI 언어 연구소',"Raimi's AI Language Lab"));
   setHTML('startSub', t('안녕하세요, 저는 라이미예요!<br>5개의 도장을 모으면서<br>AI가 우리 말을 어떻게 알아듣는지<br>함께 알아볼까요?',
