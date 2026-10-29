@@ -840,39 +840,39 @@ function getAppVersion(){
 
 /* 관리자 통계 화면 (숨김): 좌측 상단 로고를 2.5초 안에 5번 탭하면 열림 */
 let adminOpen=false;
-const ADMIN_PIN='4300';   // 클라이언트 잠금(장난 방지용). 소스에 노출되므로 강력 보안은 아님.
-/* 관리자 진입 전 숫자 키패드로 비밀번호 확인 */
+/* 비밀번호 원문은 소스에 두지 않고 PBKDF2 해시만 둔다. 비밀번호를 바꾸려면 아래 명령 결과로 ADMIN_HASH를 교체:
+   node -e "crypto.pbkdf2('새비밀번호','raim-admin',200000,32,'sha256',(e,k)=>console.log(k.toString('hex')))" */
+const ADMIN_HASH='172a10f69de6c00d689e9cd5ea80d99cb34beefb88b0ffcf463125c320519bf9';
+async function checkAdminPw(pw){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode('raim-admin'),iterations:200000,hash:'SHA-256'},key,256);
+  return [...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,'0')).join('')===ADMIN_HASH;
+}
+/* 관리자 진입 전 비밀번호 확인 */
 function askPin(onOk,onCancel){
-  let entry='';
   const ov=el('div',{id:'adminPinOverlay',style:'position:fixed;inset:0;z-index:99999;background:rgba(20,20,30,.92);display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,sans-serif;'});
   const card=el('div',{style:'background:#fff;color:#222;border-radius:18px;width:100%;max-width:320px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.4);'});
   card.append(el('div',{style:'font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;'},'관리자'));
   const sub=el('div',{style:'font-size:13px;color:#888;text-align:center;margin-bottom:14px;'},'비밀번호를 입력하세요');
   card.append(sub);
-  const dots=el('div',{style:'display:flex;justify-content:center;gap:14px;margin-bottom:18px;'});
-  const dotEls=[0,1,2,3].map(()=>el('div',{style:'width:16px;height:16px;border-radius:50%;border:2px solid #bbb;'}));
-  dotEls.forEach(d=>dots.append(d)); card.append(dots);
-  function render(){dotEls.forEach((d,i)=>{const on=i<entry.length;d.style.background=on?'#333':'transparent';d.style.borderColor=on?'#333':'#bbb';});}
+  const input=el('input',{type:'password',autocomplete:'off',autocapitalize:'off',spellcheck:'false','aria-label':'관리자 비밀번호',style:'width:100%;box-sizing:border-box;padding:14px;font-size:20px;text-align:center;border:2px solid #bbb;border-radius:12px;margin-bottom:12px;'});
+  card.append(input);
   function fail(){sub.textContent='비밀번호가 틀렸어요';sub.style.color='#e11';
     card.style.transform='translateX(-8px)';setTimeout(()=>card.style.transform='translateX(8px)',60);setTimeout(()=>card.style.transform='',120);
-    entry='';render();setTimeout(()=>{sub.textContent='비밀번호를 입력하세요';sub.style.color='#888';},1200);}
-  function press(n){if(entry.length>=4)return;entry+=n;render();
-    if(entry.length===4){if(entry===ADMIN_PIN){ov.remove();onOk();}else fail();}}
-  const pad=el('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:10px;'});
-  const mkKey=(label,fn,bg)=>{const b=el('button',{style:'padding:16px 0;font-size:22px;font-weight:700;border:0;border-radius:12px;background:'+(bg||'#f0f0f4')+';color:#222;cursor:pointer;'},label);b.onclick=fn;return b;};
-  [1,2,3,4,5,6,7,8,9].forEach(n=>pad.append(mkKey(String(n),()=>press(String(n)))));
-  pad.append(mkKey('지움',()=>{entry='';render();},'#ffe0e0'));
-  pad.append(mkKey('0',()=>press('0')));
-  pad.append(mkKey('⌫',()=>{entry=entry.slice(0,-1);render();},'#eee'));
-  card.append(pad);
+    input.value='';input.focus();setTimeout(()=>{sub.textContent='비밀번호를 입력하세요';sub.style.color='#888';},1200);}
+  async function submit(){if(!input.value)return;if(await checkAdminPw(input.value)){ov.remove();onOk();}else fail();}
+  input.onkeydown=(e)=>{if(e.key==='Enter')submit();};
+  const ok=el('button',{style:'width:100%;padding:14px;border:0;border-radius:12px;background:#333;color:#fff;font-size:16px;font-weight:700;cursor:pointer;'},'확인');
+  ok.onclick=submit; card.append(ok);
   const cancel=el('button',{style:'width:100%;margin-top:14px;padding:12px;border:0;border-radius:12px;background:#6b7280;color:#fff;font-size:15px;font-weight:600;cursor:pointer;'},'닫기');
   cancel.onclick=()=>{ov.remove();onCancel();}; card.append(cancel);
   ov.append(card); ov.onclick=(e)=>{if(e.target===ov){ov.remove();onCancel();}};
-  document.body.append(ov); render();
+  document.body.append(ov); input.focus();
 }
 function openAdmin(){
   if(adminOpen)return; adminOpen=true;
-  askPin(showAdmin, ()=>{adminOpen=false;});   // 4300 입력 성공 시에만 통계 화면 열림
+  askPin(showAdmin, ()=>{adminOpen=false;});   // 비밀번호가 맞을 때만 통계 화면 열림
 }
 function showAdmin(){
   const s=loadStats();
